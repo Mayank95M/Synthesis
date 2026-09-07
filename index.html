@@ -1,0 +1,2804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SynThesis — thesis assembly for IIT Delhi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#15181c; --ink2:#3a4048; --ink3:#6e7680; --ink4:#9aa09a;
+  --stock:#e9eae5; --stock2:#f1f2ee; --sheet:#ffffff;
+  --rule:#c6c9c1; --rule2:#dfe1da;
+  --repro:#2e6e93; --repro-tint:#dceaf2; --repro-deep:#1d4f6b;
+  --proof:#c33a2b; --proof-tint:#f7e2de;
+  --set:#2f6b4f; --set-tint:#dfece5;
+  --amber:#8a6410; --amber-tint:#f4ead2;
+  --ui:'Archivo',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --doc:'Tinos','Times New Roman',Times,serif;
+  --rail:212px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--ui); background:var(--stock); color:var(--ink);
+  font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  font-variant-numeric:tabular-nums;
+}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--repro);outline-offset:2px}
+a{color:var(--repro)}
+
+/* ---------- masthead ---------- */
+.masthead{
+  display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap;
+  padding:18px 24px 14px; background:var(--sheet);
+  border-bottom:1px solid var(--ink);
+}
+.mast-mark{font-size:11px;letter-spacing:.14em;color:var(--ink3);margin:0 0 4px}
+.mast-title{font-size:26px;font-weight:600;letter-spacing:-.022em;margin:0;line-height:1.1}
+.mast-title span{color:var(--ink4);font-weight:400}
+.mast-sub{margin:5px 0 0;font-size:12.5px;color:var(--ink2)}
+.mast-right{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+.gauge{display:flex;align-items:center;gap:9px;padding:6px 11px;border:1px solid var(--rule);background:var(--stock2)}
+.gauge-bar{width:104px;height:7px;background:var(--rule2);position:relative;overflow:hidden}
+.gauge-bar i{position:absolute;inset:0 auto 0 0;background:var(--repro);width:0%;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.gauge-txt{font-size:11.5px;color:var(--ink2);white-space:nowrap}
+
+/* ---------- shell ---------- */
+.shell{display:flex;min-height:calc(100vh - 108px);align-items:stretch;padding-bottom:32px}
+.rail{
+  width:var(--rail);flex:0 0 var(--rail);background:var(--sheet);
+  border-right:1px solid var(--rule);padding:14px 0 40px;position:sticky;top:0;align-self:flex-start;
+  max-height:calc(100vh - 32px);overflow-y:auto;
+}
+.rail-group{padding:0 0 14px}
+.rail-cap{font-size:10.5px;letter-spacing:.13em;color:var(--ink4);padding:8px 16px 5px}
+.rail-btn{
+  display:flex;align-items:baseline;gap:10px;width:100%;text-align:left;
+  background:none;border:0;border-left:3px solid transparent;
+  padding:7px 16px;cursor:pointer;color:var(--ink2);font-size:13.5px;
+}
+.rail-btn:hover{background:var(--stock2);color:var(--ink)}
+.rail-btn.on{border-left-color:var(--repro);color:var(--ink);font-weight:600;background:var(--repro-tint)}
+.rail-num{font-size:10.5px;color:var(--ink4);width:12px;flex:0 0 12px}
+.rail-btn.on .rail-num{color:var(--repro)}
+.rail-tag{margin-left:auto;font-size:10.5px;color:var(--ink4);background:var(--stock);padding:1px 5px;border:1px solid var(--rule2)}
+.rail-btn.on .rail-tag{background:var(--sheet)}
+
+.stage{flex:1;min-width:0;padding:22px 26px 90px;max-width:1500px}
+.stage-head{margin:0 0 16px;padding-bottom:11px;border-bottom:1px solid var(--rule)}
+.stage-head h2{margin:0;font-size:19px;font-weight:600;letter-spacing:-.015em}
+.stage-head p{margin:5px 0 0;color:var(--ink2);max-width:64ch;font-size:13px}
+
+/* ---------- generic bits ---------- */
+.panel{background:var(--sheet);border:1px solid var(--rule);padding:16px;margin:0 0 14px}
+.panel > h3{margin:0 0 3px;font-size:14px;font-weight:600}
+.panel > h3 + p{margin:0 0 12px;color:var(--ink3);font-size:12.5px}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.split{display:grid;grid-template-columns:minmax(280px,1fr) minmax(320px,1.15fr);gap:14px;align-items:start}
+@media (max-width:1000px){.split{grid-template-columns:1fr}}
+
+label.f{display:block;margin:0 0 10px}
+label.f > span{display:block;font-size:11.5px;color:var(--ink2);margin:0 0 3px}
+input[type=text],input[type=number],select,textarea{
+  width:100%;padding:6px 8px;border:1px solid var(--rule);background:var(--sheet);border-radius:0;
+}
+textarea{line-height:1.55;resize:vertical;min-height:70px}
+input:focus,select:focus,textarea:focus{border-color:var(--repro);outline:none;box-shadow:0 0 0 2px var(--repro-tint)}
+.hint{font-size:11.5px;color:var(--ink3);margin:4px 0 0}
+
+.btn{
+  display:inline-flex;align-items:center;gap:7px;padding:6px 12px;cursor:pointer;
+  border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:0;font-size:13px;font-weight:500;
+}
+.btn:hover{background:var(--ink2);border-color:var(--ink2)}
+.btn.ghost{background:var(--sheet);color:var(--ink);border-color:var(--rule)}
+.btn.ghost:hover{background:var(--stock2);border-color:var(--ink3)}
+.btn.key{background:var(--repro);border-color:var(--repro)}
+.btn.key:hover{background:var(--repro-deep);border-color:var(--repro-deep)}
+.btn.sm{padding:3px 8px;font-size:11.5px;font-weight:400}
+.btn.danger{background:var(--sheet);color:var(--proof);border-color:var(--proof-tint)}
+.btn.danger:hover{background:var(--proof-tint)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.spacer{flex:1}
+
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:1px 6px;border:1px solid var(--rule);background:var(--stock2);color:var(--ink2);white-space:nowrap}
+.chip.b{background:var(--repro-tint);border-color:#bcd9e8;color:var(--repro-deep)}
+.chip.r{background:var(--proof-tint);border-color:#eec8c1;color:var(--proof)}
+.chip.g{background:var(--set-tint);border-color:#c3ddcf;color:var(--set)}
+.chip.a{background:var(--amber-tint);border-color:#e2d3ab;color:var(--amber)}
+
+.empty{border:1px dashed var(--rule);padding:26px 20px;text-align:center;color:var(--ink3);background:var(--stock2)}
+.empty strong{display:block;color:var(--ink);font-size:14px;margin:0 0 5px;font-weight:600}
+table.data{width:100%;border-collapse:collapse;font-size:12.5px}
+table.data th{text-align:left;font-weight:600;font-size:11px;color:var(--ink3);border-bottom:1px solid var(--ink);padding:5px 7px}
+table.data td{border-bottom:1px solid var(--rule2);padding:6px 7px;vertical-align:top}
+.mut{color:var(--ink3)}
+.tiny{font-size:11.5px}
+
+/* ---------- papers ---------- */
+.paper-card{border:1px solid var(--rule);background:var(--sheet);margin:0 0 10px;display:flex}
+.paper-band{width:7px;flex:0 0 7px}
+.paper-body{flex:1;min-width:0;padding:12px 14px}
+.paper-body h4{margin:0;font-size:14px;font-weight:600;line-height:1.3}
+.seglist{margin:10px 0 0;border-top:1px solid var(--rule2)}
+.segrow{display:flex;gap:9px;align-items:center;padding:5px 0;border-bottom:1px solid var(--rule2);font-size:12.5px}
+.segrow select{width:auto;min-width:126px;padding:2px 5px;font-size:11.5px}
+.seg-h{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- routing ---------- */
+.slug{
+  border:1px solid var(--rule);background:var(--sheet);margin:0 0 6px;cursor:pointer;
+  display:flex;align-items:stretch;transition:transform .12s ease, box-shadow .12s ease;
+}
+.slug:hover{border-color:var(--ink3)}
+.slug.picked{border-color:var(--repro);box-shadow:0 0 0 2px var(--repro-tint);transform:translateX(3px)}
+.slug.done{opacity:.5}
+.slug-band{width:5px;flex:0 0 5px}
+.slug-main{padding:7px 9px;flex:1;min-width:0}
+.slug-top{display:flex;gap:7px;align-items:center;font-size:11px;color:var(--ink3)}
+.slug-h{font-size:12.5px;font-weight:500;margin:2px 0 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slug-x{font-size:11.5px;color:var(--ink3);margin:2px 0 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.node{border:1px solid var(--rule);background:var(--sheet);margin:0 0 6px}
+.node.sub{margin-left:20px}
+.node.subsub{margin-left:40px}
+.node-head{display:flex;gap:9px;align-items:center;padding:8px 10px}
+.node-no{font-size:11.5px;color:var(--ink3);flex:0 0 auto;min-width:26px}
+.node-t{flex:1;min-width:0;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.node.droppable{cursor:copy}
+.node.droppable:hover{border-color:var(--ink3);background:var(--stock2)}
+.node.target{border-color:var(--repro);background:var(--repro-tint)}
+.node.target .node-t{color:var(--repro-deep)}
+.spine{height:5px;display:flex;background:var(--rule2)}
+.spine i{height:100%;display:block;transition:width .45s cubic-bezier(.2,.8,.2,1)}
+.blocks{padding:0 10px 8px}
+.blk{display:flex;gap:8px;align-items:center;font-size:12px;padding:4px 0;border-top:1px solid var(--rule2)}
+.blk-dot{width:8px;height:8px;flex:0 0 8px}
+.blk-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- document preview ---------- */
+.sheetwrap{background:var(--stock);padding:14px;border:1px solid var(--rule);max-height:78vh;overflow:auto}
+.docsheet{background:#fff;margin:0 auto 16px;box-shadow:0 1px 0 var(--rule),0 3px 12px rgba(0,0,0,.07);font-family:var(--doc);color:#000}
+.docsheet h1,.docsheet h2,.docsheet h3,.docsheet h4{font-family:var(--doc)}
+.docsheet .pg-break{border-top:1px dashed var(--rule);margin:0}
+
+/* ---------- flags ---------- */
+.flag{border:1px solid var(--rule);border-left:3px solid var(--proof);background:var(--sheet);padding:9px 11px;margin:0 0 7px}
+.flag.warn{border-left-color:var(--amber)}
+.flag.info{border-left-color:var(--repro)}
+.flag h5{margin:0 0 3px;font-size:12.5px;font-weight:600}
+.flag p{margin:0;font-size:12px;color:var(--ink2)}
+.quote{font-family:var(--doc);font-size:13px;background:var(--stock2);padding:7px 9px;margin:6px 0 0;border-left:2px solid var(--rule)}
+mark{background:#f6e08a;padding:0 1px}
+
+.colophon{
+  position:fixed;left:0;right:0;bottom:0;z-index:60;
+  display:flex;align-items:center;gap:16px;
+  padding:6px 24px;background:var(--sheet);border-top:1px solid var(--ink);
+  font-size:11.5px;color:var(--ink2);
+}
+.colophon .rule{flex:1;height:1px;background:var(--rule2);min-width:12px}
+.colophon .note{color:var(--ink4);white-space:nowrap}
+@media (max-width:560px){.colophon{padding:6px 14px;font-size:11px}.colophon .note{display:none}}
+
+/* ---------- welcome / modal ---------- */
+.veil{position:fixed;inset:0;background:rgba(21,24,28,.62);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto}
+.modal{background:var(--sheet);border:1px solid var(--ink);max-width:720px;width:100%;padding:24px}
+.modal h2{margin:0 0 6px;font-size:22px;font-weight:600;letter-spacing:-.02em}
+.modal > p{margin:0 0 18px;color:var(--ink2);max-width:60ch}
+.choice{display:block;width:100%;text-align:left;border:1px solid var(--rule);background:var(--stock2);padding:13px 15px;margin:0 0 9px;cursor:pointer}
+.choice:hover{border-color:var(--repro);background:var(--repro-tint)}
+.choice b{display:block;font-size:14.5px;font-weight:600;margin:0 0 2px}
+.choice span{font-size:12.5px;color:var(--ink2)}
+.modal-close{position:absolute;top:14px;right:16px}
+
+/* ---------- step nav ---------- */
+.stepnav{display:flex;gap:9px;align-items:center;margin:20px 0 0;padding:13px 0 0;border-top:1px solid var(--rule)}
+.stepnav .why{flex:1;font-size:12.5px;color:var(--ink3);max-width:56ch}
+
+/* ---------- rail state marks ---------- */
+.rail-dot{width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:var(--rule);margin-left:auto}
+.rail-dot.ok{background:var(--set)}
+.rail-dot.attn{background:var(--proof)}
+.rail-dot.part{background:var(--amber)}
+
+/* ---------- home dashboard ---------- */
+.bigrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(126px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.stat{background:var(--sheet);padding:12px 13px}
+.stat b{display:block;font-size:23px;font-weight:600;letter-spacing:-.03em;line-height:1.1}
+.stat span{font-size:11.5px;color:var(--ink3)}
+.stat.warn b{color:var(--proof)}
+.chapbar{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--rule2)}
+.chapbar .nm{flex:0 0 auto;width:190px;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chapbar .track{flex:1;height:14px;background:var(--stock2);border:1px solid var(--rule2);position:relative;min-width:60px}
+.chapbar .fill{position:absolute;inset:0 auto 0 0;display:flex}
+.chapbar .fill i{height:100%}
+.chapbar .tgt{position:absolute;top:-3px;bottom:-3px;width:1px;background:var(--ink)}
+.chapbar .num{flex:0 0 auto;width:104px;text-align:right;font-size:11.5px;color:var(--ink3)}
+.st-dot{width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:var(--rule)}
+.st-outline{background:var(--rule)}.st-draft{background:var(--amber)}.st-revised{background:var(--repro)}.st-final{background:var(--set)}
+
+/* ---------- todo list ---------- */
+.todo{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--rule2);font-size:12.5px}
+.todo .go{margin-left:auto;flex:0 0 auto}
+.todo .kind{flex:0 0 auto;width:3px;align-self:stretch}
+.k-red{background:var(--proof)}.k-amb{background:var(--amber)}.k-blu{background:var(--repro)}
+
+/* ---------- palette ---------- */
+.palette{position:fixed;inset:0;background:rgba(21,24,28,.45);z-index:220;display:flex;align-items:flex-start;justify-content:center;padding:70px 16px}
+.palette-box{background:var(--sheet);border:1px solid var(--ink);width:100%;max-width:620px;max-height:70vh;display:flex;flex-direction:column}
+.palette-box input{border:0;border-bottom:1px solid var(--rule);padding:13px 15px;font-size:15px}
+.palette-box input:focus{box-shadow:none;border-color:var(--ink)}
+.pal-list{overflow:auto}
+.pal-item{display:flex;gap:10px;align-items:center;padding:8px 15px;cursor:pointer;border-bottom:1px solid var(--rule2);font-size:13px}
+.pal-item:hover,.pal-item.sel{background:var(--repro-tint)}
+.pal-item .w{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- misc ---------- */
+.savestate{font-size:11px;color:var(--ink4);white-space:nowrap}
+.savestate.dirty{color:var(--proof)}
+.bar{height:6px;background:var(--rule2);position:relative;overflow:hidden;margin:6px 0 0}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--repro)}
+.thumb{width:54px;height:40px;object-fit:cover;border:1px solid var(--rule);background:var(--stock2)}
+.swap{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--rule2);font-size:12.5px}
+.pill{border:1px solid var(--rule);padding:2px 7px;font-size:11.5px;cursor:pointer;background:var(--sheet)}
+.pill.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+kbd{font-family:var(--ui);font-size:10.5px;border:1px solid var(--rule);padding:1px 4px;background:var(--stock2);color:var(--ink2)}
+.toast{position:fixed;left:50%;bottom:46px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;font-size:13px;z-index:99;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+.check{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--rule2);font-size:12.5px}
+.check-m{flex:0 0 15px;font-weight:700}
+.ok{color:var(--set)}.no{color:var(--proof)}.mid{color:var(--amber)}
+details.fold{border:1px solid var(--rule2);margin:0 0 7px;background:var(--stock2)}
+details.fold > summary{cursor:pointer;padding:6px 9px;font-size:12.5px;font-weight:500}
+details.fold > div{padding:0 9px 9px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:820px){
+  .shell{flex-direction:column}
+  .rail{width:100%;flex:0 0 auto;position:static;max-height:none;display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid var(--rule);padding:0}
+  .rail-group{display:flex;padding:0}
+  .rail-cap{display:none}
+  .rail-btn{border-left:0;border-bottom:3px solid transparent;white-space:nowrap;padding:10px 13px}
+  .rail-btn.on{border-left:0;border-bottom-color:var(--repro)}
+  .stage{padding:16px 14px 80px}
+}
+@media print{
+  .masthead,.rail,.colophon,.noprint{display:none!important}
+  .stage{padding:0;max-width:none}
+  .sheetwrap{max-height:none;overflow:visible;padding:0;border:0;background:#fff}
+  .docsheet{box-shadow:none;margin:0}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div>
+    <p class="mast-mark">Indian Institute of Technology Delhi &nbsp;·&nbsp; doctoral thesis assembly</p>
+    <h1 class="mast-title" id="mastTitle">SynThesis <span>— untitled thesis</span></h1>
+    <p class="mast-sub" id="mastSub">Add your papers, lay out the chapters, and let the pieces fall where they belong.</p>
+  </div>
+  <div class="mast-right">
+    <div class="gauge" title="Share of source material placed into chapters">
+      <div class="gauge-bar"><i id="gaugeFill"></i></div>
+      <span class="gauge-txt" id="gaugeTxt">nothing set</span>
+    </div>
+    <span class="savestate" id="saveState"></span>
+    <button class="btn ghost sm" id="btnUndo" title="Undo (Ctrl+Z)" disabled>Undo</button>
+    <button class="btn ghost sm" id="btnRedo" title="Redo (Ctrl+Shift+Z)" disabled>Redo</button>
+    <button class="btn ghost sm" id="btnFind" title="Find anything (Ctrl+K)">Find</button>
+    <button class="btn ghost sm" id="btnSave">Save file</button>
+    <button class="btn ghost sm" id="btnOpen">Open</button>
+    <input type="file" id="fileProject" accept=".json" hidden>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="rail" id="rail">
+    <div class="rail-group">
+      <p class="rail-cap">Overview</p>
+      <button class="rail-btn on" data-view="home"><span class="rail-num">◈</span>Where I am<span class="rail-dot" id="dotHome"></span></button>
+      <button class="rail-btn" data-view="setup"><span class="rail-num">1</span>Thesis details<span class="rail-dot" id="dotSetup"></span></button>
+      <p class="rail-cap">Gather</p>
+      <button class="rail-btn" data-view="papers"><span class="rail-num">2</span>Papers<span class="rail-tag" id="tagPapers">0</span></button>
+      <button class="rail-btn" data-view="segments"><span class="rail-num">3</span>Segments<span class="rail-tag" id="tagSegs">0</span></button>
+      <p class="rail-cap">Set</p>
+      <button class="rail-btn" data-view="skeleton"><span class="rail-num">4</span>Chapters<span class="rail-tag" id="tagNodes">0</span></button>
+      <button class="rail-btn" data-view="route"><span class="rail-num">5</span>Placement<span class="rail-tag" id="tagUnplaced">—</span></button>
+      <p class="rail-cap">Refine</p>
+      <button class="rail-btn" data-view="stitch"><span class="rail-num">6</span>Stitching<span class="rail-dot" id="dotStitch"></span></button>
+      <button class="rail-btn" data-view="figures"><span class="rail-num">7</span>Figures &amp; tables<span class="rail-tag" id="tagFigs">0</span></button>
+      <button class="rail-btn" data-view="refs"><span class="rail-num">8</span>References<span class="rail-tag" id="tagRefs">0</span></button>
+      <p class="rail-cap">Finish</p>
+      <button class="rail-btn" data-view="front"><span class="rail-num">9</span>Front &amp; back matter<span class="rail-dot" id="dotFront"></span></button>
+      <button class="rail-btn" data-view="proof"><span class="rail-num">10</span>Proof check<span class="rail-dot" id="dotProof"></span></button>
+      <button class="rail-btn" data-view="output"><span class="rail-num">11</span>Preview &amp; export</button>
+      <p class="rail-cap">Rules</p>
+      <button class="rail-btn" data-view="format"><span class="rail-num">§</span>Format profile</button>
+      <button class="rail-btn" data-view="help"><span class="rail-num">?</span>Guide &amp; shortcuts</button>
+    </div>
+  </nav>
+  <main class="stage" id="stage"></main>
+</div>
+<footer class="colophon">
+  <span>&copy; 2026 Mayank Mayookh</span>
+  <span class="rule"></span>
+  <span class="note">SynThesis &middot; nothing leaves this browser</span>
+</footer>
+<div id="overlay"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   SynThesis — a thesis assembler for compilation-style PhD theses
+   Single file. No server, no storage APIs. Projects save as .json.
+   ===================================================================== */
+
+const INK = ['#2e6e93','#c33a2b','#6b4e93','#2f6b4f','#b07b14','#8c3f63','#17667a','#7a5c3e','#4a5568','#963b7a'];
+const uid = (p='x') => p + Math.random().toString(36).slice(2,9);
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const words = s => (String(s||'').trim().match(/[A-Za-z0-9'’\-]+/g)||[]).length;
+const $ = (s,r=document) => r.querySelector(s);
+const $$ = (s,r=document) => Array.from(r.querySelectorAll(s));
+
+/* ---- controlled vocabulary of what a paper fragment IS ---- */
+const LABELS = [
+  ['abstract',     'Abstract'],
+  ['intro',        'Introduction / motivation'],
+  ['litreview',    'Literature / related work'],
+  ['gap',          'Research gap'],
+  ['question',     'Aim, questions, objectives'],
+  ['framework',    'Theory / conceptual framework'],
+  ['method',       'Method / study design'],
+  ['instrument',   'Instrument, protocol, materials'],
+  ['participants', 'Participants / sample'],
+  ['analysis',     'Analysis procedure'],
+  ['results',      'Results / findings'],
+  ['artefact',     'Artefact, tool, system description'],
+  ['evaluation',   'Evaluation / validation'],
+  ['discussion',   'Discussion / interpretation'],
+  ['implications', 'Implications / contributions'],
+  ['limitations',  'Limitations'],
+  ['conclusion',   'Conclusion'],
+  ['future',       'Future work'],
+  ['references',   'Reference list'],
+  ['ack',          'Acknowledgement (paper)'],
+  ['appendix',     'Appendix material'],
+  ['drop',         'Do not carry over']
+];
+const LABEL_NAME = Object.fromEntries(LABELS);
+
+/* ---- what a thesis slot is FOR. Placement = label -> role. ---- */
+const ROLES = [
+  ['none',        'No automatic intake'],
+  ['r_context',   'Context and motivation'],
+  ['r_lit',       'Literature review'],
+  ['r_gap',       'Research gap'],
+  ['r_aims',      'Aims, questions, objectives'],
+  ['r_framework', 'Theoretical framework'],
+  ['r_method',    'Overall research methodology'],
+  ['r_studymeth', 'Study method (scoped to one paper)'],
+  ['r_studyres',  'Study results (scoped to one paper)'],
+  ['r_studydisc', 'Study discussion (scoped to one paper)'],
+  ['r_artefact',  'Artefact / tool development'],
+  ['r_eval',      'Evaluation and validation'],
+  ['r_synth',     'Cross-study synthesis'],
+  ['r_implic',    'Implications and contributions'],
+  ['r_limits',    'Limitations'],
+  ['r_concl',     'Conclusions'],
+  ['r_future',    'Future work'],
+  ['r_appendix',  'Appendix']
+];
+const ROLE_NAME = Object.fromEntries(ROLES);
+
+/* Placement rules, in priority order. Scoped roles win for their own paper. */
+const RULES = {
+  abstract:     [],
+  intro:        ['r_context'],
+  litreview:    ['r_lit'],
+  gap:          ['r_gap','r_lit'],
+  question:     ['r_aims','r_context'],
+  framework:    ['r_framework','r_lit'],
+  method:       ['r_studymeth','r_method'],
+  instrument:   ['r_studymeth','r_method','r_appendix'],
+  participants: ['r_studymeth','r_method'],
+  analysis:     ['r_studymeth','r_method'],
+  results:      ['r_studyres'],
+  artefact:     ['r_artefact','r_studyres'],
+  evaluation:   ['r_eval','r_studyres'],
+  discussion:   ['r_studydisc','r_synth'],
+  implications: ['r_implic','r_synth'],
+  limitations:  ['r_limits','r_concl'],
+  conclusion:   ['r_concl'],
+  future:       ['r_future','r_concl'],
+  references:   [],
+  ack:          [],
+  appendix:     ['r_appendix'],
+  drop:         []
+};
+
+/* ---- IIT Delhi format profile. Editable; these are the defaults ---- */
+function iitdFormat(){
+  return {
+    profileName:'IIT Delhi — PhD thesis (A4 submission copy)',
+    pageW:210, pageH:297,
+    marginTop:25, marginBottom:25, marginBind:35, marginOuter:25,
+    mirror:true,
+    bodyFont:'Times New Roman', bodySize:12, lineSpacing:1.5,
+    justify:true, indentFirst:true, indentMM:12, paraSpaceAfter:0,
+    chapterSize:16, h1Size:14, h2Size:13, h3Size:12,
+    chapterCaps:true, headingBold:true,
+    captionSize:11, captionSingle:true,
+    refSize:12, refSpacing:1.0, refStyle:'APA 7 (author–date)',
+    frontNumerals:'roman-lower', bodyNumerals:'arabic',
+    numberPosition:'bottom-centre',
+    runningHead:false,
+    figNumbering:'chapterwise', tblNumbering:'chapterwise',
+    abstractWordCap:1000
+  };
+}
+
+/* ---- default thesis skeleton, shaped for a design-science arc ---- */
+function defaultSkeleton(){
+  const C=(title,role,brief)=>({id:uid('n'),kind:'chapter',title,role,scope:'',brief:brief||'',blocks:[],target:6000,status:'outline'});
+  const S=(title,role,kind='section')=>({id:uid('n'),kind,title,role,scope:'',brief:'',blocks:[],target:0,status:'outline'});
+  return [
+    C('Introduction','r_context','Why the problem matters, what the thesis sets out to do, how it is organised.'),
+      S('Background and motivation','r_context'),
+      S('Research gap in brief','r_gap'),
+      S('Aim, research questions and objectives','r_aims'),
+      S('Research approach at a glance','r_method'),
+      S('Structure of the thesis','none'),
+    C('Literature review','r_lit','The consolidated review. Every paper\u2019s related-work section lands here.'),
+      S('Review scope and method','none'),
+      S('State of the art','r_lit'),
+      S('Theoretical framing','r_framework'),
+      S('Synthesis and research gap','r_gap'),
+    C('Research methodology','r_method','The overarching design and how the individual studies fit into it.'),
+      S('Research design','r_method'),
+      S('Overview of the studies','none'),
+      S('Quality, rigour and ethics','none'),
+    C('Study 1','none','Scope this chapter to one paper so its method, results and discussion land together.'),
+      S('Method','r_studymeth'),
+      S('Results','r_studyres'),
+      S('Discussion','r_studydisc'),
+    C('Study 2','none',''),
+      S('Method','r_studymeth'),
+      S('Results','r_studyres'),
+      S('Discussion','r_studydisc'),
+    C('Development of the artefact','r_artefact','Design, architecture and rationale of what you built.'),
+      S('Requirements','r_artefact'),
+      S('Design and implementation','r_artefact'),
+    C('Evaluation','r_eval',''),
+      S('Evaluation design','r_studymeth'),
+      S('Findings','r_eval'),
+    C('Discussion','r_synth','Where the studies are read together against the literature.'),
+      S('Cross-study synthesis','r_synth'),
+      S('Answering the research questions','r_synth'),
+      S('Contributions','r_implic'),
+      S('Limitations','r_limits'),
+    C('Conclusions and future work','r_concl',''),
+      S('Conclusions','r_concl'),
+      S('Future work','r_future')
+  ];
+}
+
+const state = {
+  meta:{
+    title:'', subtitle:'', author:'', entryNo:'', degree:'Doctor of Philosophy',
+    dept:'Department of Design', supervisor:'', cosupervisor:'',
+    month:'', year:String(new Date().getFullYear()), place:'New Delhi',
+    dedication:'', keywords:''
+  },
+  format: iitdFormat(),
+  papers: [],
+  skeleton: defaultSkeleton(),
+  front:{
+    acknowledgement:'', abstract:'', ackSeeds:{supervisor:'',src:'',lab:'',funding:'',family:'',others:''},
+    includeDedication:false, includeAbbrev:true, includeSymbols:false, includePubs:true, includeBiodata:true
+  },
+  abbrev:[], figures:[], tables:[], refs:[], recastLog:[],
+  symbols:[], glossary:[], snapshots:[],
+  ui:{welcomed:false, spelling:'british', showTips:true},
+  ai:{key:'', enabled:true, lastError:''},
+  view:'home', picked:null
+};
+
+/* fields every skeleton node carries, filled in for older projects */
+function normaliseSkeleton(){
+  state.skeleton.forEach(n=>{
+    if(n.target===undefined) n.target = n.kind==='chapter' ? 6000 : 0;
+    if(!n.status) n.status = 'outline';
+    if(!n.kind) n.kind='chapter';
+  });
+}
+
+/* =====================================================================
+   1. TEXT INTAKE AND SEGMENTATION
+   ===================================================================== */
+
+const HEAD_HINTS = [
+  [/^\s*(abstract|summary)\w*/i,'abstract'],
+  [/^\s*keywords?\b/i,'drop'],
+  [/^\s*(\d+[.)]?\s*)?(introduction|background and motivation)\w*/i,'intro'],
+  [/\b(literature|related work|prior work|state of the art|background|review of)\w*/i,'litreview'],
+  [/\b(research gap|gap in|gaps in|need for|problem statement)\w*/i,'gap'],
+  [/\b(research question|aim|objective|scope of the)\w*/i,'question'],
+  [/\b(theoretical|conceptual framework|framework)\w*/i,'framework'],
+  [/\b(method|methodolog|study design|research design|research approach|procedure)\w*/i,'method'],
+  [/\b(instrument|questionnaire|protocol|material|apparatus|stimul)\w*/i,'instrument'],
+  [/\b(participant|sample|respondent|recruit|interviewee)\w*/i,'participants'],
+  [/\b(data analysis|analysis procedure|analytic|coding scheme|statistical|thematic analysis)\w*/i,'analysis'],
+  [/\b(result|finding|observation)s?\b/i,'results'],
+  [/\b(tool|artefact|artifact|prototype|implementation|architecture|system design|development of)\w*/i,'artefact'],
+  [/\b(evaluat|validat|usability|user test|pilot stud|verification)\w*/i,'evaluation'],
+  [/\b(discussion|interpretation|discussing)\w*/i,'discussion'],
+  [/\b(implication|contribution)\w*/i,'implications'],
+  [/\b(limitation|threats to validity|shortcoming)\w*/i,'limitations'],
+  [/\b(conclusion|concluding|closing remark)\w*/i,'conclusion'],
+  [/\b(future work|further research|future direction|further work)\w*/i,'future'],
+  [/\b(reference|bibliograph|works cited|literature cited)\w*/i,'references'],
+  [/\b(acknowledg)\w*/i,'ack'],
+  [/\b(appendix|appendice|supplementary)\w*/i,'appendix'],
+  [/\b(declaration|funding statement|conflict of interest|ethics statement|author contribution|data availability|competing interest)\w*/i,'drop']
+];
+
+function looksLikeHeading(line){
+  const t = line.trim();
+  if(!t || t.length > 110) return false;
+  if(/[.;,]$/.test(t) && !/^\d+(\.\d+)*\.?$/.test(t)) return false;
+  if(/^\s*\d+(\.\d+)*\.?\s+\S/.test(t)) return true;            // 3.2 Something
+  if(/^[A-Z][A-Za-z0-9 ,\-:'&()\/]{2,}$/.test(t) && words(t) <= 12){
+    if(t === t.toUpperCase()) return true;                       // ALL CAPS
+    const caps = t.split(/\s+/).filter(w=>/^[A-Z]/.test(w)).length;
+    if(caps / Math.max(1,words(t)) > .45) return true;            // Title Case
+  }
+  if(HEAD_HINTS.some(([re])=>re.test(t)) && words(t) <= 9) return true;
+  return false;
+}
+
+function classify(heading, body){
+  const probe = (heading||'') + ' \n ' + (body||'').slice(0,220);
+  for(const [re,lab] of HEAD_HINTS){ if(re.test(heading||'')) return lab; }
+  for(const [re,lab] of HEAD_HINTS){ if(re.test(probe)) return lab; }
+  return 'litreview';
+}
+
+function cleanRaw(txt){
+  return String(txt||'')
+    .replace(/\r/g,'')
+    .replace(/\u00ad/g,'')
+    .replace(/-\n(?=[a-z])/g,'')                 // de-hyphenate line breaks
+    .replace(/([^\n.!?:;])\n(?=[a-z(])/g,'$1 ')  // unwrap soft-wrapped lines
+    .replace(/\n{3,}/g,'\n\n')
+    .replace(/[ \t]{2,}/g,' ');
+}
+
+function segmentText(raw){
+  const txt = cleanRaw(raw);
+  const lines = txt.split('\n');
+  const segs = [];
+  let cur = {heading:'(opening)', lines:[]};
+  for(const ln of lines){
+    if(looksLikeHeading(ln)){
+      if(cur.lines.join('').trim() || cur.heading!=='(opening)') segs.push(cur);
+      cur = {heading:ln.trim(), lines:[]};
+    } else cur.lines.push(ln);
+  }
+  segs.push(cur);
+  return segs
+    .map(s=>({heading:s.heading, text:s.lines.join('\n').trim()}))
+    .filter(s=>s.text || /reference|appendix/i.test(s.heading))
+    .map(s=>({
+      id:uid('s'), heading:s.heading, text:s.text,
+      label:classify(s.heading,s.text), wc:words(s.text), placedIn:null, order:0
+    }));
+}
+
+/* Fallback for text with no detectable headings: split on paragraph clusters */
+function segmentFallback(raw){
+  const paras = cleanRaw(raw).split(/\n{2,}/).filter(p=>p.trim());
+  const chunk = Math.max(1, Math.ceil(paras.length/8));
+  const out=[];
+  for(let i=0;i<paras.length;i+=chunk){
+    const text = paras.slice(i,i+chunk).join('\n\n');
+    out.push({id:uid('s'), heading:'Untitled block '+(out.length+1), text,
+      label:classify('',text), wc:words(text), placedIn:null, order:0});
+  }
+  return out;
+}
+
+function addPaper(name, raw){
+  const idx = state.papers.length;
+  let segs = segmentText(raw);
+  if(segs.length < 3) segs = segmentFallback(raw);
+  const guessTitle = (cleanRaw(raw).split('\n').find(l=>l.trim().length>18) || name).trim().slice(0,180);
+  const p = {
+    id: uid('p'), code:'P'+(idx+1), color: INK[idx % INK.length],
+    title: guessTitle, venue:'', year:'', authors:'', type:'Journal article',
+    filename:name, raw: cleanRaw(raw), segments: segs
+  };
+  state.papers.push(p);
+  extractFiguresTables(p);
+  harvestRefs(p);
+  return p;
+}
+
+/* =====================================================================
+   2. FIGURES, TABLES, ABBREVIATIONS
+   ===================================================================== */
+
+function extractFiguresTables(p){
+  const capRe = /^\s*(fig(?:ure)?\.?|table)\s*([0-9]+[a-z]?)\s*[.:\u2013-]?\s+(.{4,240})$/gim;
+  const seen = new Set();
+  let m;
+  while((m = capRe.exec(p.raw))){
+    const kind = /^t/i.test(m[1]) ? 'table' : 'figure';
+    const key = kind + m[2];
+    if(seen.has(key)) continue;
+    seen.add(key);
+    const rec = {id:uid('c'), paperId:p.id, kind, origNo:m[2],
+      caption:m[3].replace(/\s+/g,' ').trim().replace(/[.;]$/,''), newNo:''};
+    (kind==='figure'?state.figures:state.tables).push(rec);
+  }
+}
+
+function detectAbbrev(){
+  const map = new Map();
+  const body = allPlacedText();
+  const re = /\b([A-Z][A-Za-z\-]*(?:\s+(?:of|for|and|the|in|on|[A-Z][A-Za-z\-]*)){1,6})\s*\((([A-Z]{2,7})(?:s)?)\)/g;
+  let m;
+  while((m = re.exec(body))){
+    const full = m[1].replace(/\s+/g,' ').trim();
+    const ab = m[3];
+    if(!map.has(ab)) map.set(ab, full);
+  }
+  const existing = new Set(state.abbrev.map(a=>a.short));
+  for(const [short,long] of map){
+    if(!existing.has(short)) state.abbrev.push({id:uid('a'), short, long});
+  }
+  state.abbrev.sort((a,b)=>a.short.localeCompare(b.short));
+}
+
+/* Renumber figures/tables chapter-wise in order of first appearance */
+function renumberCaptions(){
+  const order = [];
+  state.skeleton.forEach(n=>{
+    const ch = chapterOf(n);
+    n.blocks.forEach(b=>{
+      const s = segById(b.segId); if(!s) return;
+      order.push({chapterNo: ch, paperId: paperOfSeg(s.id)?.id, text:s.text});
+    });
+  });
+  const counters = {};
+  const assign = (list, kind) => {
+    list.forEach(c=>c.newNo='');
+    order.forEach(item=>{
+      const chNo = item.chapterNo || 1;
+      const re = new RegExp('\\b(' + (kind==='figure'?'fig(?:ure)?':'table') + ')\\.?\\s*([0-9]+[a-z]?)\\b','gi');
+      let m;
+      while((m = re.exec(item.text))){
+        const rec = list.find(c=>c.paperId===item.paperId && c.origNo.toLowerCase()===m[2].toLowerCase());
+        if(rec && !rec.newNo){
+          counters[kind+chNo] = (counters[kind+chNo]||0)+1;
+          rec.newNo = chNo + '.' + counters[kind+chNo];
+          rec.chapterNo = chNo;
+        }
+      }
+    });
+  };
+  assign(state.figures,'figure');
+  assign(state.tables,'table');
+}
+
+function rewriteCaptionRefs(text, paperId, chapterNo){
+  let out = text;
+  const swap = (list, word) => {
+    list.filter(c=>c.paperId===paperId && c.newNo).forEach(c=>{
+      const re = new RegExp('\\b(' + word + ')\\.?\\s*' + c.origNo.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\b','gi');
+      out = out.replace(re, (mm, w) => (/^t/i.test(w) ? 'Table ' : 'Figure ') + c.newNo);
+    });
+  };
+  swap(state.figures,'fig(?:ure)?');
+  swap(state.tables,'table');
+  return out;
+}
+
+/* =====================================================================
+   3. REFERENCES — harvest, merge, de-duplicate
+   ===================================================================== */
+
+function splitRefBlock(txt){
+  let t = txt.replace(/\r/g,'');
+  if(/^\s*\[\d+\]/m.test(t)) return t.split(/\n(?=\s*\[\d+\])/).map(s=>s.trim()).filter(Boolean);
+  if(/^\s*\d+\.\s+[A-Z]/m.test(t)) return t.split(/\n(?=\s*\d+\.\s+[A-Z])/).map(s=>s.trim()).filter(Boolean);
+  if(/\n\s*\n/.test(t)) return t.split(/\n\s*\n/).map(s=>s.replace(/\n/g,' ').trim()).filter(Boolean);
+  return t.split(/\n(?=[A-ZÀ-Ý][A-Za-zÀ-ÿ'’\-]+,\s*[A-Z])/).map(s=>s.replace(/\n/g,' ').trim()).filter(s=>words(s)>4);
+}
+
+function refKey(raw){
+  const yr = (raw.match(/\((\d{4}[a-z]?)\)/) || raw.match(/\b(19|20)\d{2}\b/) || [,''])[1] || '';
+  const auth = (raw.match(/^[\[\d\].\s]*([A-ZÀ-Ý][A-Za-zÀ-ÿ'’\-]{1,})/) || [,''])[1] || '';
+  const title = (raw.replace(/^[^)]*\)\s*/,'').match(/[A-Za-z][A-Za-z0-9\- ]{12,}/) || [''])[0];
+  const tkey = title.toLowerCase().replace(/[^a-z0-9 ]/g,'').split(/\s+/).slice(0,5).join(' ');
+  return (auth+'|'+yr+'|'+tkey).toLowerCase();
+}
+
+function harvestRefs(p){
+  const seg = p.segments.find(s=>s.label==='references');
+  if(!seg) return;
+  splitRefBlock(seg.text).forEach(raw=>{
+    const clean = raw.replace(/^\s*(\[\d+\]|\d+\.)\s*/,'').replace(/\s+/g,' ').trim();
+    if(words(clean) < 5) return;
+    const k = refKey(clean);
+    const hit = state.refs.find(r=>r.key===k);
+    if(hit){ if(!hit.from.includes(p.id)) hit.from.push(p.id); if(clean.length>hit.raw.length) hit.raw=clean; }
+    else state.refs.push({id:uid('r'), key:k, raw:clean, from:[p.id], keep:true});
+  });
+  sortRefs();
+}
+function sortRefs(){ state.refs.sort((a,b)=>a.raw.localeCompare(b.raw,'en',{sensitivity:'base'})); }
+
+/* =====================================================================
+   4. PLACEMENT ENGINE
+   ===================================================================== */
+
+const flat = () => state.skeleton;
+const segById = id => { for(const p of state.papers){ const s=p.segments.find(x=>x.id===id); if(s) return s; } return null; };
+const paperOfSeg = id => state.papers.find(p=>p.segments.some(s=>s.id===id));
+const nodeById = id => state.skeleton.find(n=>n.id===id);
+
+function chapterOf(node){
+  let n = 0;
+  for(const x of state.skeleton){ if(x.kind==='chapter'||x.kind==='appendix') n++; if(x.id===node.id) return n; }
+  return n;
+}
+function numberOf(node){
+  let ch=0, sec=0, sub=0, ap=0, inAp=false;
+  for(const x of state.skeleton){
+    if(x.kind==='appendix'){ inAp=true; ap++; sec=0; sub=0; if(x.id===node.id) return String.fromCharCode(64+ap); }
+    else if(x.kind==='chapter'){ inAp=false; ch++; sec=0; sub=0; if(x.id===node.id) return String(ch); }
+    else if(x.kind==='section'){ sec++; sub=0; if(x.id===node.id) return (inAp?String.fromCharCode(64+ap):ch)+'.'+sec; }
+    else { sub++; if(x.id===node.id) return (inAp?String.fromCharCode(64+ap):ch)+'.'+sec+'.'+sub; }
+  }
+  return '';
+}
+const isHead = n => n.kind==='chapter' || n.kind==='appendix';
+function chapterWords(chap){
+  const i = state.skeleton.indexOf(chap); let w=0;
+  for(let k=i;k<state.skeleton.length;k++){
+    if(k>i && isHead(state.skeleton[k])) break;
+    state.skeleton[k].blocks.forEach(b=>{
+      if(b.kind==='bridge'){ w+=words(b.text); return; }
+      const s=segById(b.segId); if(s) w+=s.wc;
+    });
+  }
+  return w;
+}
+function chapterSources(chap){
+  const i = state.skeleton.indexOf(chap); const by={};
+  for(let k=i;k<state.skeleton.length;k++){
+    if(k>i && isHead(state.skeleton[k])) break;
+    state.skeleton[k].blocks.forEach(b=>{
+      const s=segById(b.segId); if(!s) return;
+      const p=paperOfSeg(s.id); if(p) by[p.id]=(by[p.id]||0)+s.wc;
+    });
+  }
+  return by;
+}
+
+function placeSeg(segId, nodeId){
+  const s = segById(segId); if(!s) return;
+  unplaceSeg(segId);
+  const n = nodeById(nodeId); if(!n) return;
+  n.blocks.push({segId, kind:'segment'});
+  s.placedIn = nodeId;
+}
+function unplaceSeg(segId){
+  state.skeleton.forEach(n=>{ n.blocks = n.blocks.filter(b=>b.segId!==segId); });
+  const s = segById(segId); if(s) s.placedIn = null;
+}
+
+function autoPlace(onlyUnplaced=true){
+  let placed=0, skipped=0;
+  state.papers.forEach(p=>{
+    p.segments.forEach(s=>{
+      if(onlyUnplaced && s.placedIn) return;
+      if(HELD.includes(s.label)){ skipped++; return; }
+      const chain = RULES[s.label] || [];
+      const depth = n => n.kind==='subsection'?0 : n.kind==='section'?1 : 2;
+      const best = list => list.sort((a,b)=>depth(a)-depth(b))[0];
+      let target = null;
+      for(const role of chain){
+        const scoped = state.skeleton.filter(n=>n.role===role && n.scope===p.id);
+        if(scoped.length){ target = best(scoped); break; }
+        const open = state.skeleton.filter(n=>n.role===role && !n.scope);
+        if(open.length){ target = best(open); break; }
+      }
+      if(target){ placeSeg(s.id, target.id); placed++; } else skipped++;
+    });
+  });
+  renumberCaptions();
+  return {placed, skipped};
+}
+
+function allPlacedText(){
+  if(typeof memo!=='undefined' && memo._txt!==undefined) return memo._txt;
+  const t = _allPlacedText();
+  if(typeof memo!=='undefined') memo._txt = t;
+  return t;
+}
+function _allPlacedText(){
+  let out=[];
+  state.skeleton.forEach(n=>n.blocks.forEach(b=>{
+    const s=segById(b.segId); if(s) out.push(s.text);
+  }));
+  return out.join('\n\n');
+}
+const HELD = ['references','drop','ack','abstract'];
+function totalWords(){ return state.papers.reduce((a,p)=>a+p.segments.reduce((x,s)=>x+(HELD.includes(s.label)?0:s.wc),0),0); }
+function placedWords(){ let t=0; state.skeleton.forEach(n=>n.blocks.forEach(b=>{const s=segById(b.segId); if(s)t+=s.wc;})); return t; }
+
+function spineFor(node){
+  const by = {}; let tot=0;
+  node.blocks.forEach(b=>{
+    const s=segById(b.segId); if(!s) return;
+    const p=paperOfSeg(s.id); if(!p) return;
+    by[p.id]=(by[p.id]||0)+s.wc; tot+=s.wc;
+  });
+  if(!tot) return '';
+  return Object.entries(by).map(([pid,w])=>{
+    const p=state.papers.find(x=>x.id===pid);
+    return `<i style="width:${(w/tot*100).toFixed(1)}%;background:${p?p.color:'#999'}" title="${esc(p?p.code:'?')} · ${w} words"></i>`;
+  }).join('');
+}
+
+/* =====================================================================
+   5. PROOF CHECKS — overlap, paper-voice, cross-references, compliance
+   ===================================================================== */
+
+const STOP = new Set('the a an of and or to in for on with that this these those is are was were be been by as at from it its their our we i he she they not but if than then such can may might will would should could has have had do does did into over under between within across also more most other some any each per'.split(' '));
+
+function shingles(txt, n=6){
+  const w = (txt.toLowerCase().match(/[a-z0-9]+/g)||[]).filter(x=>!STOP.has(x));
+  const set = new Set();
+  for(let i=0;i+n<=w.length;i++) set.add(w.slice(i,i+n).join(' '));
+  return set;
+}
+function jaccard(a,b){
+  if(!a.size||!b.size) return 0;
+  let inter=0; for(const x of a) if(b.has(x)) inter++;
+  return inter/(a.size+b.size-inter);
+}
+
+function findOverlaps(threshold=0.16){
+  const units=[];
+  state.skeleton.forEach(n=>n.blocks.forEach(b=>{
+    const s=segById(b.segId); if(!s) return;
+    const p=paperOfSeg(s.id);
+    s.text.split(/\n{2,}/).forEach((para,i)=>{
+      if(words(para) < 45) return;
+      units.push({node:n, seg:s, paper:p, i, text:para, sh:shingles(para)});
+    });
+  }));
+  const hits=[];
+  for(let a=0;a<units.length;a++){
+    for(let b=a+1;b<units.length;b++){
+      if(units[a].paper && units[b].paper && units[a].paper.id===units[b].paper.id && units[a].seg.id===units[b].seg.id) continue;
+      const j = jaccard(units[a].sh, units[b].sh);
+      if(j >= threshold) hits.push({a:units[a], b:units[b], j});
+    }
+  }
+  return hits.sort((x,y)=>y.j-x.j).slice(0,60);
+}
+
+/* Voice recasting: paper language -> thesis language */
+const RECASTS = [
+  [/\bin this paper\b/gi, 'in this chapter', 'Paper self-reference'],
+  [/\bthis paper (presents|reports|describes|proposes|examines|explores|investigates|introduces)\b/gi, 'this chapter $1', 'Paper self-reference'],
+  [/\bthe present paper\b/gi, 'this chapter', 'Paper self-reference'],
+  [/\bthis (article|manuscript|contribution)\b/gi, 'this chapter', 'Paper self-reference'],
+  [/\bthe (paper|article) is organi[sz]ed as follows\b/gi, 'the chapter is organised as follows', 'Paper self-reference'],
+  [/\bin the remainder of (this|the) paper\b/gi, 'in the remainder of this chapter', 'Paper self-reference'],
+  [/\bour (study|work|research|findings|results|analysis|approach|method)\b/gi, 'this $1', 'Plural authorial voice'],
+  [/\bwe (present|report|describe|propose|examine|explore|investigate|argue|conducted|carried out|developed|found|observed|conclude)\b/gi, 'I $1', 'Plural authorial voice'],
+  [/\bthe authors\b/gi, 'the researcher', 'Plural authorial voice'],
+  [/\bin the previous section\b/gi, 'earlier in this chapter', 'Broken cross-reference'],
+  [/\bsee (Section|Sec\.)\s*\d+(\.\d+)*/gi, '[cross-reference to update]', 'Broken cross-reference'],
+  [/\b(Section|Sec\.)\s*\d+(\.\d+)*\s+(above|below)\b/gi, '[cross-reference to update]', 'Broken cross-reference'],
+  [/\bfor space reasons\b/gi, '', 'Journal-only phrasing'],
+  [/\bdue to (the )?(page|space) (limit|constraint)\w*/gi, '', 'Journal-only phrasing'],
+  [/\bin the supplementary (material|file)\w*/gi, 'in the appendices', 'Journal-only phrasing'],
+  [/\bthis special issue\b/gi, 'this body of work', 'Journal-only phrasing']
+];
+
+function scanRecast(){ return cached('recast', _scanRecast); }
+function _scanRecast(){
+  const found=[];
+  state.skeleton.forEach(n=>n.blocks.forEach(b=>{
+    const s=segById(b.segId); if(!s) return;
+    RECASTS.forEach(([re,rep,cat],ri)=>{
+      const rx = new RegExp(re.source, re.flags);
+      let m;
+      while((m = rx.exec(s.text))){
+        found.push({segId:s.id, nodeId:n.id, ri, cat, match:m[0], idx:m.index,
+          ctx:s.text.slice(Math.max(0,m.index-70), m.index+m[0].length+70)});
+        if(!re.global) break;
+      }
+    });
+  }));
+  return found;
+}
+function applyRecast(categories){
+  let count=0;
+  state.papers.forEach(p=>p.segments.forEach(s=>{
+    if(!s.placedIn) return;
+    RECASTS.forEach(([re,rep,cat])=>{
+      if(!categories.includes(cat)) return;
+      const rx = new RegExp(re.source, re.flags);
+      count += (s.text.match(rx)||[]).length;
+      s.text = s.text.replace(rx, rep);
+    });
+    s.wc = words(s.text);
+  }));
+  state.recastLog.push({when:new Date().toISOString(), categories, count});
+  return count;
+}
+
+function complianceChecks(){
+  const f = state.format, m = state.meta, out = [];
+  const add=(ok,txt,note)=>out.push({ok,txt,note});
+  add(!!m.title,'Thesis title set','Appears on the title page, the spine and the certificate.');
+  add(!!m.author,'Candidate name set','');
+  add(!!m.entryNo,'Entry number set','IIT Delhi title pages carry the entry number.');
+  add(!!m.supervisor,'Supervisor named','Needed for the certificate page.');
+  add(!!m.dept,'Department named','');
+  add(!!m.month && !!m.year,'Month and year of submission set','');
+  add(f.bodyFont.toLowerCase().includes('times')||f.bodyFont.toLowerCase().includes('arial'),'Body typeface is a standard serif/sans','Times New Roman is the safe default.');
+  add(f.bodySize>=11 && f.bodySize<=12,'Body size within 11–12 pt','');
+  add(f.lineSpacing>=1.5,'Line spacing at least 1.5','');
+  add(f.marginBind>=30,'Binding margin at least 30 mm','Left margin on single-sided; inner margin on double-sided.');
+  add(f.marginTop>=20 && f.marginOuter>=20,'Other margins at least 20 mm','');
+  add(f.frontNumerals!=='none','Front matter uses roman numerals','');
+  add(state.front.abstract.trim().length>0,'Abstract written','');
+  add(words(state.front.abstract)<=f.abstractWordCap,'Abstract within word cap','Cap is '+f.abstractWordCap+' words; currently '+words(state.front.abstract)+'.');
+  add(state.front.acknowledgement.trim().length>0,'Acknowledgement written','');
+  add(state.refs.filter(r=>r.keep).length>0,'Reference list present','');
+  add(state.skeleton.filter(n=>n.kind==='chapter').length>=4,'At least four chapters','A doctoral thesis normally runs from Introduction to Conclusions.');
+  const empty = state.skeleton.filter(n=>n.kind==='chapter' && !chapterHasContent(n));
+  add(empty.length===0, 'Every chapter has material', empty.length? 'Empty: '+empty.map(n=>n.title).join(', ') : '');
+  const unplaced = state.papers.flatMap(p=>p.segments.filter(s=>!s.placedIn && !HELD.includes(s.label)));
+  add(unplaced.length===0,'All carried-over segments placed', unplaced.length? unplaced.length+' segment(s) still unplaced.' : '');
+  add(state.papers.every(p=>p.venue && p.year),'Every paper has venue and year','Needed for the List of Publications.');
+  const c = auditCitations();
+  add(c.orphans.length===0,'Every citation has a reference', c.orphans.length? c.orphans.length+' citation(s) point at nothing in the list.' : '');
+  add(c.uncited.length===0,'No reference sits unused', c.uncited.length? c.uncited.length+' listed reference(s) are never cited.' : '');
+  add(!spellingSplit().split,'Spelling is consistent','Mixed British and American spellings across merged papers.');
+  const todo = (allPlacedText().match(TODO_RE)||[]).length;
+  add(todo===0,'No TODO markers left', todo? todo+' still in the text.' : '');
+  add(!allPlacedText().includes('[cross-reference to update]'),'No unresolved cross-references','');
+  add(state.figures.every(f=>!f.newNo || f.img),'Every numbered figure has artwork', state.figures.filter(f=>f.newNo&&!f.img).length? state.figures.filter(f=>f.newNo&&!f.img).length+' caption(s) without an image.' : '');
+  return out;
+}
+function chapterHasContent(chap){
+  const idx = state.skeleton.indexOf(chap);
+  let has = chap.blocks.length>0 || (chap.brief||'').trim().length>0;
+  for(let i=idx+1;i<state.skeleton.length;i++){
+    if(state.skeleton[i].kind==='chapter') break;
+    if(state.skeleton[i].blocks.length) has = true;
+  }
+  return has;
+}
+
+/* =====================================================================
+   6. AI ASSIST (optional). Works inside Claude; needs a key if self-hosted.
+   ===================================================================== */
+async function ask(prompt, system){
+  const headers = {'Content-Type':'application/json'};
+  if(state.ai.key){ headers['x-api-key']=state.ai.key; headers['anthropic-version']='2023-06-01'; headers['anthropic-dangerous-direct-browser-access']='true'; }
+  const body = {model:'claude-sonnet-4-6', max_tokens:1000, messages:[{role:'user',content:prompt}]};
+  if(system) body.system = system;
+  const res = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers,body:JSON.stringify(body)});
+  if(!res.ok) throw new Error('Assist request failed ('+res.status+')');
+  const data = await res.json();
+  return (data.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('\n').trim();
+}
+async function assist(prompt, system){
+  try{ state.ai.lastError=''; return await ask(prompt, system); }
+  catch(e){
+    state.ai.lastError = e.message;
+    toast('Writing assist is not reachable here. Everything else still works.');
+    return null;
+  }
+}
+
+/* =====================================================================
+   7. FRONT MATTER GENERATORS
+   ===================================================================== */
+const ROMAN = n => {
+  const t=[[1000,'m'],[900,'cm'],[500,'d'],[400,'cd'],[100,'c'],[90,'xc'],[50,'l'],[40,'xl'],[10,'x'],[9,'ix'],[5,'v'],[4,'iv'],[1,'i']];
+  let out=''; for(const [v,s] of t){ while(n>=v){ out+=s; n-=v; } } return out;
+};
+const M = k => state.meta[k] || '';
+const SUP = () => [M('supervisor'), M('cosupervisor')].filter(Boolean);
+
+function genCertificate(){
+  const sups = SUP();
+  const plural = sups.length>1;
+  return `This is to certify that the thesis entitled “${M('title')}”, being submitted by ${M('author')} (${M('entryNo')}) to the ${M('dept')}, Indian Institute of Technology Delhi, for the award of the degree of ${M('degree')}, is a record of bona fide research work carried out by ${'him/her'} under ${plural?'our':'my'} supervision and guidance.
+
+The candidate has fulfilled the requirements for the submission of this thesis, which to the best of ${plural?'our':'my'} knowledge has reached the requisite standard. The material contained in this thesis has not been submitted, in part or in full, to any other university or institute for the award of any degree or diploma.
+
+${sups.map(s=>s+'\n'+M('dept')+'\nIndian Institute of Technology Delhi').join('\n\n') || '(supervisor name)'}`;
+}
+
+function genDeclaration(){
+  return `I declare that this written submission represents my own ideas in my own words. Where the ideas or words of others have been included, I have adequately cited and referenced the original sources. I also declare that I have adhered to all principles of academic honesty and integrity and have not misrepresented, fabricated or falsified any idea, data, fact or source in my submission.
+
+Parts of the work reported in this thesis have appeared in the publications listed under “List of Publications”. These are reproduced here with the necessary permissions, and the contributions of co-authors are acknowledged.
+
+${M('author')}
+${M('entryNo')}
+${M('place')}`;
+}
+
+function genAcknowledgement(){
+  const s = state.front.ackSeeds;
+  const lines = [];
+  if(s.supervisor) lines.push(`I owe my deepest gratitude to my supervisor, ${s.supervisor}, whose guidance shaped this work from its first uncertain question to its present form. The patience with which each draft was read, and the precision of the questions asked of it, have marked both this thesis and the way I now think about research.`);
+  if(s.src) lines.push(`I thank the members of my Student Research Committee, ${s.src}, for the care with which they examined this work at each stage and for the corrections that have made it stronger.`);
+  if(s.lab) lines.push(`My thanks go to ${s.lab}, whose company through long days of coding, piloting and analysis made the work lighter than it had any right to be.`);
+  if(s.funding) lines.push(`I gratefully acknowledge ${s.funding} for supporting this research.`);
+  lines.push(`I am grateful to every participant who gave time to the studies reported here. Their willingness to describe how they actually work, rather than how they are supposed to, is the substance of this thesis.`);
+  if(s.others) lines.push(s.others);
+  if(s.family) lines.push(`Finally, to ${s.family} — for a patience I did not earn and could not have done without.`);
+  lines.push(`\n${M('author')}`);
+  return lines.join('\n\n');
+}
+
+function genPublications(){
+  const j = state.papers.filter(p=>/journal/i.test(p.type));
+  const c = state.papers.filter(p=>!/journal/i.test(p.type));
+  const fmt = (p,i) => `[${i+1}] ${p.authors||M('author')} (${p.year||'n.d.'}). ${p.title}. ${p.venue||''}`.replace(/\s+\./g,'.').trim();
+  const out = [];
+  if(j.length){ out.push('Journal papers'); j.forEach((p,i)=>out.push(fmt(p,i))); }
+  if(c.length){ out.push('Conference papers'); c.forEach((p,i)=>out.push(fmt(p,i))); }
+  return out.join('\n');
+}
+
+function chapterMap(){
+  const rows = [];
+  state.papers.forEach(p=>{
+    const chs = new Set();
+    state.skeleton.forEach(n=>n.blocks.forEach(b=>{
+      const s=segById(b.segId); if(s && paperOfSeg(s.id)?.id===p.id) chs.add(chapterOf(n));
+    }));
+    rows.push({p, chapters:[...chs].sort((a,b)=>a-b)});
+  });
+  return rows;
+}
+
+/* =====================================================================
+   8. DOCUMENT BUILD
+   ===================================================================== */
+function docStyles(forWord){
+  const f = state.format;
+  const lh = (f.lineSpacing*100).toFixed(0)+'%';
+  const pageCSS = forWord
+    ? `@page{size:${f.pageW}mm ${f.pageH}mm; margin:${f.marginTop}mm ${f.marginOuter}mm ${f.marginBottom}mm ${f.marginBind}mm; mso-page-numbers:arabic;}
+       div.Section1{page:Section1}`
+    : `@page{size:${f.pageW}mm ${f.pageH}mm; margin:${f.marginTop}mm ${f.marginOuter}mm ${f.marginBottom}mm ${f.marginBind}mm;}`;
+  return `${pageCSS}
+body,p,td,li{font-family:'${f.bodyFont}',serif;font-size:${f.bodySize}pt;line-height:${lh};}
+p{margin:0 0 ${f.paraSpaceAfter}pt;text-align:${f.justify?'justify':'left'};text-indent:${f.indentFirst?f.indentMM+'mm':'0'};}
+p.noind{text-indent:0}
+p.centre{text-align:center;text-indent:0}
+h1.chap{font-size:${f.chapterSize}pt;font-weight:${f.headingBold?'bold':'normal'};text-align:center;margin:0 0 18pt;line-height:1.3;${f.chapterCaps?'text-transform:uppercase;':''}page-break-before:always;}
+h1.chap span.no{display:block;font-size:${f.h1Size}pt;font-weight:normal;margin:0 0 8pt;text-transform:none;}
+h2.sec{font-size:${f.h1Size}pt;font-weight:${f.headingBold?'bold':'normal'};margin:16pt 0 6pt;text-align:left;}
+h3.sub{font-size:${f.h2Size}pt;font-weight:${f.headingBold?'bold':'normal'};margin:12pt 0 5pt;}
+h4.subsub{font-size:${f.h3Size}pt;font-style:italic;margin:10pt 0 4pt;}
+.front h1{font-size:${f.h1Size}pt;font-weight:bold;text-align:center;margin:0 0 16pt;text-transform:uppercase;page-break-before:always;}
+.cap{font-size:${f.captionSize}pt;line-height:${f.captionSingle?'100%':lh};text-align:center;text-indent:0;margin:4pt 0 12pt;}
+.refs p{font-size:${f.refSize}pt;line-height:${(f.refSpacing*100).toFixed(0)}%;text-indent:0;margin:0 0 6pt;padding-left:12mm;text-indent:-12mm;text-align:left;}
+table.toc{width:100%;border-collapse:collapse}
+table.toc td{font-size:${f.bodySize}pt;line-height:150%;padding:1pt 0;vertical-align:top}
+table.toc td.n{width:22mm}
+table.toc td.pg{width:16mm;text-align:right}
+.title-page{text-align:center;page-break-after:always}
+.title-page .t{font-size:${f.chapterSize+2}pt;font-weight:bold;line-height:1.4;text-transform:uppercase}
+.title-page .by{font-size:${f.bodySize}pt;margin:26pt 0 6pt}
+.title-page .nm{font-size:${f.h1Size}pt;font-weight:bold}
+.title-page .sub{font-size:${f.bodySize}pt;line-height:1.6;margin:26pt 0}
+img{max-width:100%;height:auto}
+blockquote{margin:8pt 0 8pt 12mm;font-size:${f.bodySize-1}pt;line-height:100%}
+.pgbrk{page-break-before:always}`;
+}
+
+function renderSeg(text, paper){
+  const pid = paper ? paper.id : '';
+  const recs = [...state.figures, ...state.tables].filter(c=>c.paperId===pid);
+  return text.split(/\n{2,}/).map(par=>{
+    const t = par.trim(); if(!t) return '';
+    const m = t.match(/^\s*(fig(?:ure)?|table)\.?\s*([0-9]+\.[0-9]+|[0-9]+[a-z]?)\s*[.:\u2013-]?\s+(.*)$/is);
+    if(m){
+      const kind = /^t/i.test(m[1]) ? 'table' : 'figure';
+      const rec = recs.find(c=>c.kind===kind && (c.newNo===m[2] || c.origNo===m[2]));
+      if(rec){
+        const num = rec.newNo || rec.origNo;
+        const art = (kind==='figure' && rec.img) ? `<p class="centre"><img src="${rec.img}" alt=""></p>` : '';
+        return art + `<p class="cap">${kind==='figure'?'Figure':'Table'} ${num}&nbsp;&nbsp;${esc(rec.caption||m[3])}</p>`;
+      }
+    }
+    return `<p>${esc(t).replace(/\n/g,' ')}</p>`;
+  }).filter(Boolean).join('\n');
+}
+function paras(text, cls){
+  return text.split(/\n{2,}/).map(p=>p.trim()).filter(Boolean)
+    .map(p=>`<p${cls?' class="'+cls+'"':''}>${esc(p).replace(/\n/g,' ')}</p>`).join('\n');
+}
+
+function buildFrontMatter(){
+  const f=state.format, m=state.meta, F=state.front;
+  const parts=[];
+  parts.push(`<div class="title-page">
+<p class="t">${esc(m.title||'Thesis title')}</p>
+${m.subtitle?`<p class="centre" style="font-size:${f.h1Size}pt">${esc(m.subtitle)}</p>`:''}
+<p class="by">by</p>
+<p class="nm">${esc(m.author||'Candidate name')}</p>
+<p class="centre">${esc(m.entryNo)}</p>
+<p class="centre">${esc(m.dept)}</p>
+<p class="sub">Submitted<br>in fulfilment of the requirements of the degree of ${esc(m.degree)}<br>to the</p>
+<p class="nm">INDIAN INSTITUTE OF TECHNOLOGY DELHI</p>
+<p class="centre" style="margin-top:22pt">${esc(m.month)} ${esc(m.year)}</p>
+</div>`);
+  if(F.includeDedication && m.dedication)
+    parts.push(`<div class="front"><p class="centre" style="margin-top:80pt;font-style:italic">${esc(m.dedication)}</p></div>`);
+  parts.push(`<div class="front"><h1>Certificate</h1>${paras(genCertificate(),'noind')}</div>`);
+  parts.push(`<div class="front"><h1>Declaration</h1>${paras(genDeclaration(),'noind')}</div>`);
+  parts.push(`<div class="front"><h1>Acknowledgement</h1>${paras(F.acknowledgement||genAcknowledgement(),'noind')}</div>`);
+  parts.push(`<div class="front"><h1>Abstract</h1>${paras(F.abstract||'(abstract to be written)','noind')}
+${m.keywords?`<p class="noind"><b>Keywords:</b> ${esc(m.keywords)}</p>`:''}</div>`);
+  parts.push(`<div class="front" id="tocblock"><h1>Table of Contents</h1><table class="toc">${tocRows()}</table></div>`);
+  if(state.figures.length) parts.push(`<div class="front"><h1>List of Figures</h1><table class="toc">${capRows(state.figures,'Figure')}</table></div>`);
+  if(state.tables.length) parts.push(`<div class="front"><h1>List of Tables</h1><table class="toc">${capRows(state.tables,'Table')}</table></div>`);
+  if(F.includeAbbrev && state.abbrev.length)
+    parts.push(`<div class="front"><h1>List of Abbreviations</h1><table class="toc">${state.abbrev.map(a=>`<tr><td class="n">${esc(a.short)}</td><td>${esc(a.long)}</td></tr>`).join('')}</table></div>`);
+  if(F.includeSymbols && state.symbols.length)
+    parts.push(`<div class="front"><h1>List of Symbols</h1><table class="toc">${state.symbols.map(s=>`<tr><td class="n">${esc(s.sym)}</td><td>${esc(s.desc)}</td><td class="pg">${esc(s.unit||'')}</td></tr>`).join('')}</table></div>`);
+  if(F.includePubs && state.papers.length)
+    parts.push(`<div class="front"><h1>List of Publications</h1>${paras(genPublications(),'noind')}</div>`);
+  return parts.join('\n');
+}
+
+function tocRows(){
+  const front=['Certificate','Declaration','Acknowledgement','Abstract','List of Figures','List of Tables','List of Abbreviations'];
+  let rows = front.map(t=>`<tr><td class="n"></td><td>${t}</td><td class="pg">${'&nbsp;'}</td></tr>`).join('');
+  state.skeleton.forEach(n=>{
+    const no = numberOf(n);
+    const bold = n.kind==='chapter';
+    rows += `<tr><td class="n">${bold?'<b>Chapter '+no+'</b>':no}</td><td>${bold?'<b>'+esc(n.title)+'</b>':(n.kind==='subsection'?'&nbsp;&nbsp;&nbsp;':'')+esc(n.title)}</td><td class="pg"></td></tr>`;
+  });
+  rows += `<tr><td class="n"></td><td><b>References</b></td><td class="pg"></td></tr>`;
+  if(state.front.includePubs) rows += `<tr><td class="n"></td><td><b>List of Publications</b></td><td class="pg"></td></tr>`;
+  if(state.front.includeBiodata) rows += `<tr><td class="n"></td><td><b>Brief Bio-data of the Author</b></td><td class="pg"></td></tr>`;
+  if(state.front.includeSymbols && state.symbols.length) rows = rows.replace('<td>List of Abbreviations</td>','<td>List of Abbreviations</td></tr><tr><td class="n"></td><td>List of Symbols</td>');
+  return rows;
+}
+function capRows(list,word){
+  return list.filter(c=>c.newNo).sort((a,b)=>a.newNo.localeCompare(b.newNo,'en',{numeric:true}))
+    .map(c=>`<tr><td class="n">${word} ${c.newNo}</td><td>${esc(c.caption)}</td><td class="pg"></td></tr>`).join('');
+}
+
+function buildBody(){
+  let out='';
+  state.skeleton.forEach(n=>{
+    const no = numberOf(n);
+    const chNo = chapterOf(n);
+    if(n.kind==='appendix') out += `<h1 class="chap"><span class="no">Appendix ${no}</span>${esc(n.title)}</h1>`;
+    else if(n.kind==='chapter') out += `<h1 class="chap"><span class="no">Chapter ${no}</span>${esc(n.title)}</h1>`;
+    else if(n.kind==='section') out += `<h2 class="sec">${no}&nbsp;&nbsp;${esc(n.title)}</h2>`;
+    else out += `<h3 class="sub">${no}&nbsp;&nbsp;${esc(n.title)}</h3>`;
+    if(n.brief && !n.blocks.length) out += `<p class="noind"><i>[${esc(n.brief)}]</i></p>`;
+    n.blocks.forEach(b=>{
+      if(b.kind==='bridge'){ out += paras(b.text||'','noind'); return; }
+      const s = segById(b.segId); if(!s) return;
+      const p = paperOfSeg(s.id);
+      let t = rewriteCaptionRefs(s.text, p?p.id:'', chNo);
+      out += renderSeg(t, p);
+    });
+  });
+  out += `<h1 class="chap">References</h1><div class="refs">` +
+    state.refs.filter(r=>r.keep).map(r=>`<p>${esc(r.raw)}</p>`).join('') + `</div>`;
+  if(state.front.includePubs) out += `<h1 class="chap">List of Publications</h1>${paras(genPublications(),'noind')}`;
+  if(state.front.includeBiodata) out += `<h1 class="chap">Brief Bio-data of the Author</h1>${paras(state.front.biodata||`${M('author')} received a bachelor's degree in engineering and a master's degree in design before joining the ${M('dept')}, Indian Institute of Technology Delhi, as a doctoral candidate. The research reported in this thesis was carried out under the supervision of ${SUP().join(' and ')||'(supervisor)'}.`,'noind')}`;
+  return out;
+}
+
+function buildDocument(forWord){
+  return `<div class="front-matter">${buildFrontMatter()}</div>\n<div class="body-matter">${buildBody()}</div>`;
+}
+
+/* =====================================================================
+   9. EXPORTS
+   ===================================================================== */
+function download(name, text, mime){
+  const b = new Blob([text], {type: mime||'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(b); a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();}, 400);
+}
+const slug = s => (s||'thesis').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,48);
+
+function exportWord(){
+  const f = state.format;
+  let doc = buildDocument(true);
+  // swap the placeholder contents list for a live Word field, so page numbers fill in
+  const i = doc.indexOf('<div class="front" id="tocblock">');
+  if(i>=0){
+    const j = doc.indexOf('</div>', doc.indexOf('</table>', i));
+    doc = doc.slice(0,i) +
+      `<div class="front"><h1>Table of Contents</h1>` +
+      `<p class="noind"><span style='mso-element:field-begin'></span> TOC \\o "1-3" \\h \\z \\u ` +
+      `<span style='mso-element:field-separator'></span>Right-click here in Word and choose “Update field” to build the contents with page numbers.` +
+      `<span style='mso-element:field-end'></span></p></div>` +
+      doc.slice(j+6);
+  }
+  const pos = f.numberPosition==='bottom-right' ? 'right' : 'center';
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><title>${esc(M('title'))}</title>
+<!--[if gte mso 9]><xml><w:WordDocument>
+<w:View>Print</w:View><w:Zoom>100</w:Zoom>
+${f.mirror?'<w:MirrorMargins/>':''}
+<w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->
+<style>${docStyles(true)}
+@page Section1{mso-footer:f1;}
+p.MsoFooter{font-family:'${f.bodyFont}',serif;font-size:${f.bodySize}pt;text-align:${pos};}
+</style></head>
+<body><div class="Section1">${doc}
+<div style='mso-element:footer' id="f1"><p class="MsoFooter"><span style='mso-field-code:PAGE'></span></p></div>
+</div></body></html>`;
+  download(slug(M('title'))+'.doc', html, 'application/msword');
+  toast('Word file downloaded. Open it, then Save As .docx.');
+}
+
+function exportLatex(){
+  const f=state.format, m=state.meta;
+  const esc2 = s => String(s||'').replace(/([&%$#_{}])/g,'\\$1').replace(/~/g,'\\textasciitilde{}').replace(/\^/g,'\\textasciicircum{}');
+  let tex = `% ${m.title}
+% Generated by SynThesis. Geometry matches the format profile in the tool.
+\\documentclass[12pt,a4paper,oneside]{report}
+\\usepackage[top=${f.marginTop}mm,bottom=${f.marginBottom}mm,left=${f.marginBind}mm,right=${f.marginOuter}mm]{geometry}
+\\usepackage{times}\\usepackage{setspace}\\usepackage{graphicx}\\usepackage{natbib}
+\\usepackage[hidelinks]{hyperref}
+\\onehalfspacing
+\\title{${esc2(m.title)}}\\author{${esc2(m.author)}}
+\\begin{document}
+\\begin{titlepage}\\centering
+{\\Large\\bfseries ${esc2(m.title)}\\par}\\vspace{2cm}
+by\\par\\vspace{0.5cm}{\\large ${esc2(m.author)}\\par}${esc2(m.entryNo)}\\par ${esc2(m.dept)}\\par
+\\vfill Submitted in fulfilment of the requirements of the degree of\\par ${esc2(m.degree)}\\par to the\\par
+{\\large INDIAN INSTITUTE OF TECHNOLOGY DELHI}\\par\\vspace{1cm}${esc2(m.month)} ${esc2(m.year)}
+\\end{titlepage}
+\\chapter*{Certificate}\\addcontentsline{toc}{chapter}{Certificate}
+${esc2(genCertificate()).replace(/\n\n/g,'\n\n')}
+\\chapter*{Declaration}\\addcontentsline{toc}{chapter}{Declaration}
+${esc2(genDeclaration())}
+\\chapter*{Acknowledgement}\\addcontentsline{toc}{chapter}{Acknowledgement}
+${esc2(state.front.acknowledgement||genAcknowledgement())}
+\\chapter*{Abstract}\\addcontentsline{toc}{chapter}{Abstract}
+${esc2(state.front.abstract)}
+\\tableofcontents\\listoffigures\\listoftables
+`;
+  state.skeleton.forEach(n=>{
+    const cmd = n.kind==='chapter'?'chapter':(n.kind==='section'?'section':'subsection');
+    tex += `\n\\${cmd}{${esc2(n.title)}}\n`;
+    n.blocks.forEach(b=>{
+      const s = b.kind==='bridge' ? {text:b.text} : segById(b.segId);
+      if(s) tex += esc2(s.text)+'\n\n';
+    });
+  });
+  tex += `\n\\begin{thebibliography}{99}\n` +
+    state.refs.filter(r=>r.keep).map((r,i)=>`\\bibitem{ref${i+1}} ${esc2(r.raw)}`).join('\n') +
+    `\n\\end{thebibliography}\n\\end{document}\n`;
+  download(slug(M('title'))+'.tex', tex, 'text/x-tex');
+  toast('LaTeX source downloaded.');
+}
+
+function exportMarkdown(){
+  let md = `# ${M('title')}\n\n*${M('author')} · ${M('entryNo')} · ${M('dept')}, IIT Delhi · ${M('month')} ${M('year')}*\n\n## Abstract\n\n${state.front.abstract}\n\n`;
+  state.skeleton.forEach(n=>{
+    const h = n.kind==='chapter'?'##':(n.kind==='section'?'###':'####');
+    md += `\n${h} ${numberOf(n)} ${n.title}\n\n`;
+    n.blocks.forEach(b=>{
+      const s = b.kind==='bridge' ? {text:b.text} : segById(b.segId);
+      if(s) md += s.text + '\n\n';
+    });
+  });
+  md += `\n## References\n\n` + state.refs.filter(r=>r.keep).map(r=>'- '+r.raw).join('\n');
+  download(slug(M('title'))+'.md', md, 'text/markdown');
+}
+
+function exportProject(){
+  const copy = JSON.parse(JSON.stringify(state));
+  delete copy.ai; delete copy.picked; delete copy.view;
+  copy._app='synthesis'; copy._v=1;
+  download(slug(M('title')||'thesis-project')+'.json', JSON.stringify(copy,null,1), 'application/json');
+  toast('Project saved.');
+}
+function importProject(txt){
+  try{
+    const d = JSON.parse(txt);
+    if(!['synthesis','composing-stick'].includes(d._app)) throw new Error('Not a SynThesis project file.');
+    ['meta','format','papers','skeleton','front','abbrev','figures','tables','refs','recastLog','symbols','glossary','snapshots','ui'].forEach(k=>{ if(d[k]) state[k]=d[k]; });
+    normaliseSkeleton(); state.ui.welcomed = true;
+    toast('Project opened.'); render();
+  }catch(e){ toast('Could not open that file. '+e.message); }
+}
+
+/* =====================================================================
+   10. FILE INTAKE
+   ===================================================================== */
+async function readAnyFile(file){
+  const ext = (file.name.split('.').pop()||'').toLowerCase();
+  if(['txt','md','markdown','tex','csv'].includes(ext)) return await file.text();
+  if(ext==='html'||ext==='htm'){
+    const d = new DOMParser().parseFromString(await file.text(),'text/html');
+    return d.body.innerText;
+  }
+  if(ext==='docx'){
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');
+    const buf = await file.arrayBuffer();
+    const r = await window.mammoth.extractRawText({arrayBuffer:buf});
+    return r.value;
+  }
+  if(ext==='pdf'){
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const doc = await window.pdfjsLib.getDocument({data: await file.arrayBuffer()}).promise;
+    let out=[];
+    for(let i=1;i<=doc.numPages;i++){
+      const pg = await doc.getPage(i);
+      const tc = await pg.getTextContent();
+      let line='', last=null, buf=[];
+      tc.items.forEach(it=>{
+        const y = it.transform[5];
+        if(last!==null && Math.abs(y-last)>3){ buf.push(line.trim()); line=''; }
+        line += it.str + (it.hasEOL?'':' ');
+        last = y;
+      });
+      buf.push(line.trim());
+      out.push(buf.filter(Boolean).join('\n'));
+    }
+    return out.join('\n\n');
+  }
+  return await file.text();
+}
+const _scripts = {};
+function loadScript(src){
+  if(_scripts[src]) return _scripts[src];
+  _scripts[src] = new Promise((res,rej)=>{
+    const s=document.createElement('script'); s.src=src;
+    s.onload=res; s.onerror=()=>rej(new Error('Could not load the reader for this file type. Paste the text instead.'));
+    document.head.appendChild(s);
+  });
+  return _scripts[src];
+}
+
+/* =====================================================================
+   11. UI PLUMBING
+   ===================================================================== */
+let _t;
+function toast(msg){
+  const el=$('#toast'); el.textContent=msg; el.classList.add('on');
+  clearTimeout(_t); _t=setTimeout(()=>el.classList.remove('on'), 3600);
+}
+function bind(sel, ev, fn, root=document){ $$(sel,root).forEach(el=>el.addEventListener(ev,fn)); }
+function fieldBind(root){
+  $$('[data-model]',root).forEach(el=>{
+    const path = el.dataset.model.split('.');
+    let o = state; for(let i=0;i<path.length-1;i++) o=o[path[i]];
+    const k = path[path.length-1];
+    if(el.type==='checkbox') el.checked = !!o[k]; else el.value = o[k] ?? '';
+    el.addEventListener('input', ()=>{
+      o[k] = el.type==='checkbox' ? el.checked : (el.type==='number' ? parseFloat(el.value)||0 : el.value);
+      dirty = true; clearTimeout(autoTimer); autoTimer = setTimeout(autosave, 2500);
+      if(el.dataset.live) render(); else updateChrome();
+    });
+  });
+}
+function updateChrome(){
+  $('#mastTitle').innerHTML = M('title') ? esc(M('title')) : 'SynThesis <span>— untitled thesis</span>';
+  $('#mastSub').textContent = M('author') ? `${M('author')}${M('entryNo')?' · '+M('entryNo'):''} · ${M('dept')}` : 'Add your papers, lay out the chapters, and let the pieces fall where they belong.';
+  const tot = totalWords(), pl = placedWords();
+  const pct = tot? Math.round(pl/tot*100) : 0;
+  $('#gaugeFill').style.width = pct+'%';
+  $('#gaugeTxt').textContent = tot ? `${pct}% set · ${pl.toLocaleString()} of ${tot.toLocaleString()} words` : 'nothing set';
+  $('#tagPapers').textContent = state.papers.length;
+  $('#tagSegs').textContent = state.papers.reduce((a,p)=>a+p.segments.length,0);
+  $('#tagNodes').textContent = state.skeleton.filter(n=>n.kind==='chapter').length;
+  const un = state.papers.flatMap(p=>p.segments.filter(s=>!s.placedIn && !HELD.includes(s.label))).length;
+  $('#tagUnplaced').textContent = un ? un+' left' : (state.papers.length?'clear':'—');
+  $('#tagRefs').textContent = state.refs.filter(r=>r.keep).length;
+  const tf = $('#tagFigs'); if(tf) tf.textContent = state.figures.length + state.tables.length;
+  const ss = $('#saveState');
+  if(ss){
+    ss.className = 'savestate' + (dirty?' dirty':'');
+    ss.textContent = dirty ? 'unsaved changes' : (savedAt ? 'saved' : '');
+  }
+  const u=$('#btnUndo'), r=$('#btnRedo');
+  if(u) u.disabled = !past.length;
+  if(r) r.disabled = !future.length;
+}
+
+/* =====================================================================
+   12. VIEWS
+   ===================================================================== */
+const VIEWS = {};
+
+VIEWS.home = () => {
+  const g = gaps();
+  const heads = state.skeleton.filter(isHead);
+  const totalTarget = heads.reduce((a,n)=>a+(n.target||0),0);
+  const totalNow = heads.reduce((a,n)=>a+chapterWords(n),0);
+  const loose = state.papers.flatMap(p=>p.segments.filter(s=>!s.placedIn && !HELD.includes(s.label))).length;
+  const next = !state.papers.length ? ['papers','Add your papers']
+    : loose ? ['route','Place the '+loose+' loose piece'+(loose===1?'':'s')]
+    : !state.front.abstract.trim() ? ['front','Write the abstract']
+    : g.filter(x=>x.tone==='red').length ? [g.find(x=>x.tone==='red').view,'Clear what is blocking submission']
+    : ['output','Preview and export'];
+  return `
+<div class="stage-head"><h2>Where I am</h2>
+<p>${M('title')? esc(M('title')) : 'An untitled thesis.'} ${heads.length} chapters, ${state.papers.length} papers, ${totalNow.toLocaleString()} words placed.</p></div>
+
+<div class="panel" style="border-left:3px solid var(--repro)">
+  <div class="row">
+    <div style="flex:1;min-width:200px">
+      <h3 style="margin:0">Next: ${esc(next[1])}</h3>
+      <p class="tiny mut" style="margin:3px 0 0">${g.filter(x=>x.tone==='red').length} blocking, ${g.filter(x=>x.tone==='amb').length} worth doing, ${g.filter(x=>x.tone==='blu').length} to consider.</p>
+    </div>
+    <button class="btn key" data-goto="${next[0]}">Go there</button>
+  </div>
+</div>
+
+<div class="bigrow" style="margin:0 0 14px">
+  <div class="stat"><b>${totalNow.toLocaleString()}</b><span>words placed${totalTarget?' of '+totalTarget.toLocaleString()+' targeted':''}</span></div>
+  <div class="stat"><b>${heads.length}</b><span>chapters</span></div>
+  <div class="stat"><b>${state.papers.length}</b><span>papers</span></div>
+  <div class="stat"><b>${state.refs.filter(r=>r.keep).length}</b><span>references</span></div>
+  <div class="stat"><b>${state.figures.length + state.tables.length}</b><span>figures &amp; tables</span></div>
+  <div class="stat ${g.filter(x=>x.tone==='red').length?'warn':''}"><b>${g.length}</b><span>things left</span></div>
+</div>
+
+<div class="panel">
+  <h3>The thesis at a glance</h3>
+  <p>Each bar is a chapter. The colours are the papers feeding it; the line is your word target.</p>
+  ${heads.length ? heads.map(ch=>{
+    const w = chapterWords(ch), by = chapterSources(ch), tot = Object.values(by).reduce((a,b)=>a+b,0);
+    const scale = Math.max(totalTarget? Math.max(...heads.map(x=>Math.max(x.target||0, chapterWords(x)))) : 1, 1);
+    return `<div class="chapbar">
+      <span class="st-dot st-${ch.status||'outline'}" title="${ch.status||'outline'}"></span>
+      <span class="nm" title="${esc(ch.title)}">${numberOf(ch)}. ${esc(ch.title)}</span>
+      <span class="track">
+        <span class="fill" style="width:${Math.min(100,w/scale*100).toFixed(1)}%">
+          ${tot? Object.entries(by).map(([pid,pw])=>{const p=state.papers.find(x=>x.id===pid);return `<i style="width:${(pw/tot*100).toFixed(1)}%;background:${p?p.color:'#999'}"></i>`;}).join('') : ''}
+        </span>
+        ${ch.target?`<span class="tgt" style="left:${Math.min(100,ch.target/scale*100).toFixed(1)}%"></span>`:''}
+      </span>
+      <span class="num">${w.toLocaleString()}${ch.target?' / '+ch.target.toLocaleString():''}</span>
+    </div>`;
+  }).join('') : `<div class="empty"><strong>No chapters yet</strong>Pick a shape on the Thesis details screen.</div>`}
+</div>
+
+<div class="panel">
+  <h3>What is left</h3>
+  ${g.length ? g.map(x=>`<div class="todo">
+    <span class="kind ${x.tone==='red'?'k-red':x.tone==='amb'?'k-amb':'k-blu'}"></span>
+    <span><b style="font-weight:${x.tone==='red'?600:400}">${esc(x.txt)}</b>${x.note?`<br><span class="mut tiny">${esc(x.note)}</span>`:''}</span>
+    <button class="btn ghost sm go" data-goto="${x.view}">Open</button>
+  </div>`).join('') : `<div class="empty"><strong>Nothing outstanding</strong>Everything the tool can check is clear. What is left is the writing.</div>`}
+</div>
+
+<div class="panel">
+  <h3>Snapshots</h3>
+  <p>A point you can come back to. Kept in the project file, so save the file to keep them for good.</p>
+  <div class="row" style="margin-bottom:8px">
+    <input type="text" id="snapName" placeholder="Name this version" style="max-width:250px">
+    <button class="btn ghost sm" id="btnSnap">Take a snapshot</button>
+  </div>
+  ${state.snapshots.length ? state.snapshots.map(s=>`<div class="swap">
+    <span style="flex:1">${esc(s.name)} <span class="mut tiny">· ${new Date(s.when).toLocaleString()}</span></span>
+    <button class="btn ghost sm" data-restore="${s.id}">Restore</button>
+    <button class="btn danger sm" data-dropsnap="${s.id}">×</button></div>`).join('')
+   : '<p class="tiny mut">None yet.</p>'}
+</div>
+${stepNav()}`;
+};
+
+VIEWS.figures = () => `
+<div class="stage-head"><h2>Figures &amp; tables</h2>
+<p>Captions are lifted from your papers and renumbered chapter-wise in the order they appear in the thesis. Add the artwork and it will be placed exactly where the caption sat in the original text.</p></div>
+<div class="panel">
+  <div class="row">
+    <button class="btn key" id="btnRenumber">Renumber chapter-wise</button>
+    <button class="btn ghost" id="btnAddFig">Add a figure by hand</button>
+    <button class="btn ghost" id="btnAddTbl">Add a table by hand</button>
+    <div class="spacer"></div>
+    <span class="tiny mut">${state.figures.filter(f=>f.img).length} of ${state.figures.length} figures have artwork</span>
+  </div>
+</div>
+<div class="panel">
+  <h3>Figures</h3>
+  <table class="data"><thead><tr><th style="width:60px">Artwork</th><th style="width:54px">No.</th><th>Caption</th><th style="width:64px">From</th><th style="width:30px"></th></tr></thead><tbody>
+  ${state.figures.length ? state.figures.map(c=>{
+    const p=state.papers.find(x=>x.id===c.paperId);
+    return `<tr>
+      <td>${c.img?`<img class="thumb" src="${c.img}" alt="">`:''}<br><button class="btn ghost sm" data-upimg="${c.id}">${c.img?'Replace':'Add'}</button></td>
+      <td>${c.newNo?`<b>${c.newNo}</b>`:`<span class="mut">${c.origNo}</span>`}</td>
+      <td><input type="text" data-cap="${c.id}" value="${esc(c.caption)}" style="border:0;padding:1px 2px"></td>
+      <td>${p?`<span class="chip" style="border-color:${p.color}">${p.code}</span>`:'<span class="mut tiny">added</span>'}</td>
+      <td><button class="btn danger sm" data-delcap="${c.id}">×</button></td></tr>`;
+  }).join('') : '<tr><td colspan="5" class="mut tiny">None found. Captions are picked up from lines that begin “Figure 1.” or “Fig. 1:” in your papers.</td></tr>'}
+  </tbody></table>
+</div>
+<div class="panel">
+  <h3>Tables</h3>
+  <table class="data"><thead><tr><th style="width:54px">No.</th><th>Caption</th><th style="width:64px">From</th><th style="width:30px"></th></tr></thead><tbody>
+  ${state.tables.length ? state.tables.map(c=>{
+    const p=state.papers.find(x=>x.id===c.paperId);
+    return `<tr><td>${c.newNo?`<b>${c.newNo}</b>`:`<span class="mut">${c.origNo}</span>`}</td>
+      <td><input type="text" data-cap="${c.id}" value="${esc(c.caption)}" style="border:0;padding:1px 2px"></td>
+      <td>${p?`<span class="chip" style="border-color:${p.color}">${p.code}</span>`:'<span class="mut tiny">added</span>'}</td>
+      <td><button class="btn danger sm" data-delcap="${c.id}">×</button></td></tr>`;
+  }).join('') : '<tr><td colspan="4" class="mut tiny">None found yet.</td></tr>'}
+  </tbody></table>
+  <p class="hint">Table bodies stay in the flowing text where your paper had them. Only the caption and its number are managed here.</p>
+</div>
+<div class="panel">
+  <h3>Abbreviations</h3>
+  <div class="row" style="margin-bottom:8px">
+    <button class="btn ghost sm" id="btnAbbrev">Find them in the text</button>
+    <button class="btn ghost sm" id="btnAddAbbrev">Add one</button>
+    <span class="tiny mut">Reads “Full Term (ABC)” patterns from placed text.</span>
+  </div>
+  <table class="data"><tbody>${state.abbrev.map(a=>`<tr>
+    <td style="width:90px"><input type="text" data-ab="${a.id}" data-abk="short" value="${esc(a.short)}" style="border:0;padding:1px 2px"></td>
+    <td><input type="text" data-ab="${a.id}" data-abk="long" value="${esc(a.long)}" style="border:0;padding:1px 2px"></td>
+    <td style="width:30px"><button class="btn danger sm" data-delab="${a.id}">×</button></td></tr>`).join('') || '<tr><td class="mut tiny">None yet.</td></tr>'}</tbody></table>
+</div>
+<div class="panel">
+  <h3>Symbols and nomenclature</h3>
+  <div class="row" style="margin-bottom:8px">
+    <label class="tiny"><input type="checkbox" data-model="front.includeSymbols" data-live="1"> Include a List of Symbols</label>
+    <button class="btn ghost sm" id="btnAddSym">Add a symbol</button>
+  </div>
+  <table class="data"><tbody>${state.symbols.map(s=>`<tr>
+    <td style="width:70px"><input type="text" data-sym="${s.id}" data-symk="sym" value="${esc(s.sym)}" style="border:0;padding:1px 2px"></td>
+    <td><input type="text" data-sym="${s.id}" data-symk="desc" value="${esc(s.desc)}" style="border:0;padding:1px 2px" placeholder="what it stands for"></td>
+    <td style="width:80px"><input type="text" data-sym="${s.id}" data-symk="unit" value="${esc(s.unit||'')}" style="border:0;padding:1px 2px" placeholder="unit"></td>
+    <td style="width:30px"><button class="btn danger sm" data-delsym="${s.id}">×</button></td></tr>`).join('') || '<tr><td class="mut tiny">None yet.</td></tr>'}</tbody></table>
+</div>
+<input type="file" id="figFile" accept="image/*" hidden>
+${stepNav()}`;
+
+
+VIEWS.setup = () => `
+<div class="stage-head"><h2>Thesis details</h2>
+<p>These fill the title page, the certificate, the declaration and the List of Publications. Nothing is stored on a server — use “Save project” to keep your work.</p></div>
+<div class="panel">
+  <div class="grid g2">
+    <label class="f"><span>Thesis title</span><input type="text" data-model="meta.title" placeholder="Full title as it will appear on the spine"></label>
+    <label class="f"><span>Subtitle (optional)</span><input type="text" data-model="meta.subtitle"></label>
+    <label class="f"><span>Candidate name</span><input type="text" data-model="meta.author"></label>
+    <label class="f"><span>Entry number</span><input type="text" data-model="meta.entryNo" placeholder="e.g. 2019DZZ1234"></label>
+    <label class="f"><span>Department or centre</span><input type="text" data-model="meta.dept"></label>
+    <label class="f"><span>Degree</span><input type="text" data-model="meta.degree"></label>
+    <label class="f"><span>Supervisor</span><input type="text" data-model="meta.supervisor" placeholder="Prof. …"></label>
+    <label class="f"><span>Co-supervisor (optional)</span><input type="text" data-model="meta.cosupervisor"></label>
+    <label class="f"><span>Month of submission</span><input type="text" data-model="meta.month" placeholder="e.g. December"></label>
+    <label class="f"><span>Year</span><input type="text" data-model="meta.year"></label>
+    <label class="f"><span>Place</span><input type="text" data-model="meta.place"></label>
+    <label class="f"><span>Keywords</span><input type="text" data-model="meta.keywords" placeholder="comma separated"></label>
+  </div>
+  <label class="f"><span>Dedication (optional)</span><input type="text" data-model="meta.dedication" placeholder="To …"></label>
+  <label class="tiny"><input type="checkbox" data-model="front.includeDedication"> Include a dedication page</label>
+</div>
+<div class="panel">
+  <h3>Start from a shape</h3>
+  <p>Replaces the chapter list and unplaces anything already set. “One chapter per paper” builds a chapter for each paper you have added and scopes it automatically — the usual choice for a thesis built from published work.</p>
+  <div class="row">
+    <button class="btn ghost" data-preset="dsrm">Design-science arc</button>
+    <button class="btn ghost" data-preset="compilation">One chapter per paper</button>
+    <button class="btn ghost" data-preset="classic">Classic five-chapter</button>
+    <button class="btn ghost" data-preset="blank">Empty</button>
+  </div>
+</div>`;
+
+VIEWS.papers = () => `
+<div class="stage-head"><h2>Papers</h2>
+<p>Add each published paper. PDF, Word, text and Markdown are read in the browser; you can also paste. Every paper gets a colour, and that colour follows its material all the way to the finished chapter.</p></div>
+<div class="panel">
+  <div class="row">
+    <button class="btn key" id="btnPick">Add paper files</button>
+    <input type="file" id="filePapers" multiple accept=".pdf,.docx,.txt,.md,.html,.tex" hidden>
+    <button class="btn ghost" id="btnPaste">Paste text instead</button>
+    <div class="spacer"></div>
+    <span class="tiny mut">${state.papers.length} paper${state.papers.length===1?'':'s'} · ${totalWords().toLocaleString()} carry-over words</span>
+  </div>
+  <div id="pasteBox" hidden style="margin-top:12px">
+    <label class="f"><span>Paper title or filename</span><input type="text" id="pasteName" placeholder="Study 2 — needs elicitation with educators"></label>
+    <label class="f"><span>Full text</span><textarea id="pasteText" rows="9" placeholder="Paste the whole paper, headings included. Headings are what the splitter reads."></textarea></label>
+    <button class="btn" id="btnPasteAdd">Add this paper</button>
+  </div>
+</div>
+${state.papers.length ? state.papers.map(p=>`
+<div class="paper-card">
+  <div class="paper-band" style="background:${p.color}"></div>
+  <div class="paper-body">
+    <div class="row" style="align-items:flex-start">
+      <div style="flex:1;min-width:0">
+        <h4>${esc(p.title)}</h4>
+        <p class="tiny mut" style="margin:3px 0 0">${p.code} · ${p.segments.length} segments · ${p.segments.reduce((a,s)=>a+s.wc,0).toLocaleString()} words · ${esc(p.filename)}</p>
+      </div>
+      <button class="btn ghost sm" data-resplit="${p.id}">Re-split</button>
+      <button class="btn danger sm" data-delpaper="${p.id}">Remove</button>
+    </div>
+    <div class="grid g3" style="margin-top:10px">
+      <label class="f"><span>Title as published</span><input type="text" data-paper="${p.id}" data-key="title" value="${esc(p.title)}"></label>
+      <label class="f"><span>Authors</span><input type="text" data-paper="${p.id}" data-key="authors" value="${esc(p.authors)}" placeholder="Mayookh, M., …"></label>
+      <label class="f"><span>Venue</span><input type="text" data-paper="${p.id}" data-key="venue" value="${esc(p.venue)}" placeholder="Design Science, 11, e12"></label>
+      <label class="f"><span>Year</span><input type="text" data-paper="${p.id}" data-key="year" value="${esc(p.year)}"></label>
+      <label class="f"><span>Type</span><select data-paper="${p.id}" data-key="type">${['Journal article','Conference paper','Book chapter','Under review'].map(t=>`<option ${p.type===t?'selected':''}>${t}</option>`).join('')}</select></label>
+    </div>
+  </div>
+</div>`).join('') : `<div class="empty"><strong>No papers yet</strong>Add the six or so papers your thesis rests on. The splitter reads their headings and works out what each part of them is.</div>`}`;
+
+VIEWS.segments = () => {
+  if(!state.papers.length) return `<div class="stage-head"><h2>Segments</h2></div><div class="empty"><strong>Add a paper first</strong>Segments appear once there is something to split.</div>`;
+  const counts = {};
+  state.papers.forEach(p=>p.segments.forEach(s=>counts[s.label]=(counts[s.label]||0)+1));
+  return `
+<div class="stage-head"><h2>Segments</h2>
+<p>What each part of each paper is. The splitter has made a first pass; correct anything it got wrong, because these labels are what decide where the text lands.</p></div>
+<div class="panel">
+  <h3>Across all papers</h3>
+  <div class="row">${LABELS.filter(([k])=>counts[k]).map(([k,n])=>`<span class="chip">${esc(n)} · ${counts[k]}</span>`).join('')}</div>
+  <div class="row" style="margin-top:10px">
+    <button class="btn ghost sm" id="btnAiSeg">Re-label with writing assist</button>
+    <span class="tiny mut">Useful when a paper has unusual section names.</span>
+  </div>
+</div>
+${state.papers.map(p=>`
+<div class="paper-card">
+  <div class="paper-band" style="background:${p.color}"></div>
+  <div class="paper-body">
+    <h4>${p.code} — ${esc(p.title)}</h4>
+    <div class="seglist">
+      ${p.segments.map(s=>`
+      <div class="segrow">
+        <select data-seglabel="${s.id}">${LABELS.map(([k,n])=>`<option value="${k}" ${s.label===k?'selected':''}>${esc(n)}</option>`).join('')}</select>
+        <span class="seg-h" title="${esc(s.heading)}">${esc(s.heading)}</span>
+        <span class="chip">${s.wc}w</span>
+        ${s.placedIn?`<span class="chip g">set</span>`:`<span class="chip">loose</span>`}
+        <button class="btn ghost sm" data-viewseg="${s.id}">Read</button>
+      </div>`).join('')}
+    </div>
+  </div>
+</div>`).join('')}
+<div id="segReader"></div>`;
+};
+
+VIEWS.skeleton = () => `
+<div class="stage-head"><h2>Chapters</h2>
+<p>The shape of the thesis, and what each slot is <em>for</em>. That purpose is how material finds its way here: a slot marked “Literature review” takes the related-work sections of every paper. A slot scoped to one paper takes only that paper's material.</p></div>
+<div class="panel">
+  <div class="row">
+    <button class="btn ghost sm" data-add="chapter">Add chapter</button>
+    <button class="btn ghost sm" data-add="section">Add section</button>
+    <button class="btn ghost sm" data-add="subsection">Add subsection</button>
+    <button class="btn ghost sm" data-add="appendix">Add appendix</button>
+    <div class="spacer"></div>
+    <span class="tiny mut">${state.skeleton.filter(isHead).length} chapters · ${state.skeleton.length} headings · ${state.skeleton.filter(isHead).reduce((a,n)=>a+(n.target||0),0).toLocaleString()} words targeted</span>
+  </div>
+  <p class="hint">Each row: title, what the slot is for, which paper it draws on, how far along it is, and a word target.</p>
+</div>
+${state.skeleton.map((n,i)=>`
+<div class="node ${n.kind==='section'?'sub':n.kind==='subsection'?'subsub':''}">
+  <div class="node-head">
+    <span class="node-no">${n.kind==='chapter'?'Ch '+numberOf(n):n.kind==='appendix'?'App '+numberOf(n):numberOf(n)}</span>
+    <input type="text" class="node-t" style="border:0;padding:2px 0;font-weight:${n.kind==='chapter'?600:500}" data-nodetitle="${n.id}" value="${esc(n.title)}">
+    <select data-noderole="${n.id}" style="width:auto;max-width:210px;font-size:11.5px;padding:2px 5px">${ROLES.map(([k,v])=>`<option value="${k}" ${n.role===k?'selected':''}>${esc(v)}</option>`).join('')}</select>
+    <select data-nodescope="${n.id}" style="width:auto;font-size:11.5px;padding:2px 5px">
+      <option value="">any paper</option>
+      ${state.papers.map(p=>`<option value="${p.id}" ${n.scope===p.id?'selected':''}>only ${p.code}</option>`).join('')}
+    </select>
+    ${isHead(n)?`<select data-nodestatus="${n.id}" style="width:auto;font-size:11.5px;padding:2px 5px" title="How far along this chapter is">
+      ${['outline','draft','revised','final'].map(s=>`<option value="${s}" ${n.status===s?'selected':''}>${s}</option>`).join('')}
+    </select>
+    <input type="number" data-nodetarget="${n.id}" value="${n.target||0}" step="500" title="Word target" style="width:74px;font-size:11.5px;padding:2px 5px">`:''}
+    <button class="btn ghost sm" data-nodeup="${n.id}" ${i===0?'disabled':''}>↑</button>
+    <button class="btn ghost sm" data-nodedown="${n.id}" ${i===state.skeleton.length-1?'disabled':''}>↓</button>
+    <button class="btn danger sm" data-nodedel="${n.id}">×</button>
+  </div>
+  <div class="spine">${spineFor(n)}</div>
+</div>`).join('')}`;
+
+VIEWS.route = () => {
+  const loose = [];
+  state.papers.forEach(p=>p.segments.forEach(s=>{ if(!s.placedIn && !HELD.includes(s.label)) loose.push({p,s}); }));
+  const pickedSeg = state.picked ? segById(state.picked) : null;
+  const wanted = pickedSeg ? (RULES[pickedSeg.label]||[]) : [];
+  return `
+<div class="stage-head"><h2>Placement</h2>
+<p>${pickedSeg ? 'Now click the slot it belongs in. Suggested slots are highlighted.' : 'Click a piece on the left, then click where it goes. Or place everything at once and correct afterwards.'}</p></div>
+<div class="panel">
+  <div class="row">
+    <button class="btn key" id="btnAuto">Place everything by purpose</button>
+    <button class="btn ghost" id="btnAutoLoose" ${loose.length?'':'disabled'}>Place the ${loose.length} loose piece${loose.length===1?'':'s'}</button>
+    <button class="btn ghost" id="btnClearAll">Unplace all</button>
+    <div class="spacer"></div>
+    ${state.picked?`<button class="btn ghost sm" id="btnUnpick">Cancel selection</button>`:''}
+  </div>
+</div>
+<div class="split">
+  <div>
+    <h3 style="font-size:13px;margin:0 0 8px">Loose pieces <span class="mut" style="font-weight:400">${loose.length}</span></h3>
+    ${loose.length ? loose.map(({p,s})=>`
+      <div class="slug ${state.picked===s.id?'picked':''}" data-pick="${s.id}">
+        <div class="slug-band" style="background:${p.color}"></div>
+        <div class="slug-main">
+          <div class="slug-top"><span>${p.code}</span><span class="chip">${esc(LABEL_NAME[s.label])}</span><span>${s.wc}w</span></div>
+          <div class="slug-h">${esc(s.heading)}</div>
+          <div class="slug-x">${esc(s.text.slice(0,110))}…</div>
+        </div>
+      </div>`).join('')
+      : `<div class="empty"><strong>Everything is set</strong>Nothing is waiting to be placed.</div>`}
+    ${state.papers.some(p=>p.segments.some(s=>s.label==='abstract')) ? `
+    <details class="fold" style="margin-top:10px"><summary>Abstracts are held back (${state.papers.filter(p=>p.segments.some(s=>s.label==='abstract')).length})</summary>
+    <div class="tiny mut">Paper abstracts are not carried into chapters. They are used on the Front &amp; back matter step to draft the thesis abstract.</div></details>`:''}
+  </div>
+  <div>
+    <h3 style="font-size:13px;margin:0 0 8px">The thesis</h3>
+    ${state.skeleton.map(n=>{
+      const strong = pickedSeg && wanted.includes(n.role) && (!n.scope || n.scope===paperOfSeg(pickedSeg.id)?.id);
+      return `
+      <div class="node ${n.kind==='section'?'sub':n.kind==='subsection'?'subsub':''} ${strong?'target':''} ${pickedSeg?'droppable':''}" ${pickedSeg?`data-drop="${n.id}"`:''}>
+        <div class="node-head">
+          <span class="node-no">${n.kind==='chapter'?'Ch '+numberOf(n):n.kind==='appendix'?'App '+numberOf(n):numberOf(n)}</span>
+          <span class="node-t">${esc(n.title)}</span>
+          ${strong?'<span class="chip b">suggested</span>':''}
+          ${n.scope?`<span class="chip" style="border-color:${state.papers.find(p=>p.id===n.scope)?.color}">${state.papers.find(p=>p.id===n.scope)?.code} only</span>`:''}
+          <span class="chip">${n.blocks.length}</span>
+        </div>
+        <div class="spine">${spineFor(n)}</div>
+        ${n.blocks.length?`<div class="blocks">${n.blocks.map((b,bi)=>{
+          const s=segById(b.segId); if(!s) return '';
+          const p=paperOfSeg(s.id);
+          return `<div class="blk">
+            <span class="blk-dot" style="background:${p?p.color:'#999'}"></span>
+            <span class="blk-t">${esc(s.heading)} <span class="mut">· ${s.wc}w</span></span>
+            <button class="btn ghost sm" data-editblk="${s.id}">edit</button>
+            <button class="btn ghost sm" data-blkup="${n.id}|${bi}" ${bi===0?'disabled':''}>↑</button>
+            <button class="btn ghost sm" data-blkdown="${n.id}|${bi}" ${bi===n.blocks.length-1?'disabled':''}>↓</button>
+            <button class="btn ghost sm" data-unplace="${s.id}">out</button>
+          </div>`;
+        }).join('')}</div>`:''}
+      </div>`;
+    }).join('')}
+  </div>
+</div>`;
+};
+
+VIEWS.stitch = () => {
+  const hits = scanRecast();
+  const cats = [...new Set(hits.map(h=>h.cat))];
+  return `
+<div class="stage-head"><h2>Stitching</h2>
+<p>Six papers stitched together still sound like six papers. This step finds the seams: sentences that talk about “this paper”, cross-references that no longer point anywhere, and passages that say the same thing twice.</p></div>
+<div class="panel">
+  <h3>Voice and self-reference</h3>
+  <p>${hits.length} phrase${hits.length===1?'':'s'} in placed text still read as journal writing.</p>
+  ${cats.length ? `<div class="row" style="margin-bottom:10px">${cats.map(c=>`<label class="chip"><input type="checkbox" class="recast-cat" value="${esc(c)}" checked style="margin-right:4px">${esc(c)} · ${hits.filter(h=>h.cat===c).length}</label>`).join('')}</div>
+  <div class="row"><button class="btn key" id="btnRecast">Recast the selected kinds</button><span class="tiny mut">Changes the placed text. Save the project first if you want a way back.</span></div>
+  <div style="margin-top:12px;max-height:340px;overflow:auto">
+    ${hits.slice(0,40).map(h=>{
+      const s=segById(h.segId), p=paperOfSeg(h.segId), n=nodeById(h.nodeId);
+      return `<div class="flag ${/cross-ref/i.test(h.cat)?'':'warn'}">
+        <h5>${esc(h.cat)} <span class="mut" style="font-weight:400">· ${p?p.code:''} → ${esc(n?n.title:'')}</span></h5>
+        <div class="quote">…${esc(h.ctx).replace(esc(h.match),'<mark>'+esc(h.match)+'</mark>')}…</div>
+      </div>`;
+    }).join('')}
+    ${hits.length>40?`<p class="tiny mut">…and ${hits.length-40} more.</p>`:''}
+  </div>` : `<div class="empty"><strong>Nothing flagged</strong>Either the text is already in thesis voice, or nothing has been placed yet.</div>`}
+</div>
+<div class="panel">
+  <h3>Repeated passages</h3>
+  <p>Papers reuse their own framing. Anything that appears twice in the thesis body is worth cutting to once.</p>
+  <div class="row"><button class="btn ghost" id="btnOverlap">Look for repeats</button><span class="tiny mut">Compares every placed paragraph against every other.</span></div>
+  <div id="overlapOut" style="margin-top:12px"></div>
+</div>
+<div class="panel">
+  <h3>One spelling, one vocabulary</h3>
+  <p>Papers written years apart drift. ${(()=>{const s=spellingSplit();return s.split? s.brit+' British and '+s.amer+' American spellings are both in use.' : (s.brit||s.amer)? 'Spelling looks consistent.' : 'Nothing to compare yet.';})()}</p>
+  <div class="row" style="margin-bottom:10px">
+    <span class="tiny mut">Settle on</span>
+    <button class="pill ${state.ui.spelling==='british'?'on':''}" data-spell="british">British</button>
+    <button class="pill ${state.ui.spelling==='american'?'on':''}" data-spell="american">American</button>
+    <button class="btn ghost sm" id="btnSpell">Harmonise the placed text</button>
+  </div>
+  <p class="hint">Pairs marked “yours to decide” are left alone — <em>practice</em> and <em>practise</em>, <em>programme</em> and <em>program</em> differ by meaning, not only by dialect.</p>
+  ${(()=>{const d=spellingSplit().detail; return d.length? `<table class="data"><thead><tr><th>British</th><th>American</th></tr></thead><tbody>${d.map(x=>`<tr><td>${esc(x.b)} <span class="mut">×${x.nb}</span></td><td>${esc(x.a)} <span class="mut">×${x.na}</span>${x.risky?' <span class="chip a">yours to decide</span>':''}</td></tr>`).join('')}</tbody></table>` : '';})()}
+  <h4 style="font-size:12.5px;margin:16px 0 6px">Preferred terms</h4>
+  <p class="tiny mut" style="margin:0 0 8px">If the same idea is called three things across your papers, pin the name you want and list the others.</p>
+  ${state.glossary.map(g=>`<div class="swap">
+    <input type="text" data-gl="${g.id}" data-glk="term" value="${esc(g.term)}" placeholder="preferred term" style="max-width:190px">
+    <span class="mut tiny">replaces</span>
+    <input type="text" data-gl="${g.id}" data-glk="variants" value="${esc(g.variants||'')}" placeholder="variant, other variant">
+    <button class="btn danger sm" data-delgl="${g.id}">×</button></div>`).join('')}
+  <div class="row" style="margin-top:8px">
+    <button class="btn ghost sm" id="btnAddGl">Add a term</button>
+    ${state.glossary.some(g=>g.term)?`<button class="btn ghost sm" id="btnApplyGl">Apply to placed text</button>`:''}
+  </div>
+  ${(()=>{const r=glossaryScan(); return r.length? `<div style="margin-top:10px">${r.map(x=>`<div class="flag info"><h5>${esc(x.g.term)}</h5><p>${x.hits.map(hh=>esc(hh.v)+' × '+hh.n).join(' · ')}</p></div>`).join('')}</div>`:'';})()}
+</div>
+<div class="panel">
+  <h3>Bridges between chapters</h3>
+  <p>A short passage at the head of a chapter saying where the reader has arrived from, and one at the foot saying where they go next.</p>
+  ${state.skeleton.filter(n=>n.kind==='chapter').map(n=>`
+    <details class="fold"><summary>Chapter ${numberOf(n)} — ${esc(n.title)}</summary><div>
+      <label class="f"><span>Opening bridge</span><textarea data-bridge="${n.id}|open" rows="3">${esc((n.blocks.find(b=>b.kind==='bridge'&&b.at==='open')||{}).text||'')}</textarea></label>
+      <button class="btn ghost sm" data-writebridge="${n.id}">Draft one with writing assist</button>
+    </div></details>`).join('')}
+</div>`;
+};
+
+VIEWS.front = () => `
+<div class="stage-head"><h2>Front &amp; back matter</h2>
+<p>Certificate, declaration, table of contents, lists of figures and tables, abbreviations and publications are all built from what you have already entered. The abstract and the acknowledgement are yours to write; there is a starting point for both.</p></div>
+<div class="panel">
+  <h3>Abstract</h3>
+  <p>${words(state.front.abstract)} of ${state.format.abstractWordCap} words.</p>
+  <textarea data-model="front.abstract" rows="8" placeholder="One page. The problem, what you did, what you found, what it means."></textarea>
+  <div class="row" style="margin-top:8px">
+    <button class="btn ghost sm" id="btnDraftAbstract">Draft from the paper abstracts</button>
+    <span class="tiny mut">${state.papers.filter(p=>p.segments.some(s=>s.label==='abstract')).length} paper abstract(s) available.</span>
+  </div>
+</div>
+<div class="panel">
+  <h3>Acknowledgement</h3>
+  <p>Name the people; the wording is built around them. Edit freely afterwards — this page is the one part of a thesis nobody wants generated.</p>
+  <div class="grid g2">
+    <label class="f"><span>Supervisor, as you would address them</span><input type="text" data-model="front.ackSeeds.supervisor" placeholder="Prof. Pramod Khadilkar"></label>
+    <label class="f"><span>Committee members</span><input type="text" data-model="front.ackSeeds.src"></label>
+    <label class="f"><span>Lab, group or colleagues</span><input type="text" data-model="front.ackSeeds.lab"></label>
+    <label class="f"><span>Funding or fellowship</span><input type="text" data-model="front.ackSeeds.funding"></label>
+    <label class="f"><span>Family</span><input type="text" data-model="front.ackSeeds.family"></label>
+    <label class="f"><span>Anyone else, in your own words</span><input type="text" data-model="front.ackSeeds.others"></label>
+  </div>
+  <div class="row" style="margin:4px 0 10px"><button class="btn ghost sm" id="btnBuildAck">Build a first draft</button></div>
+  <textarea data-model="front.acknowledgement" rows="9" placeholder="Your acknowledgement."></textarea>
+</div>
+<div class="panel">
+  <h3>Lists of figures, tables, abbreviations and symbols</h3>
+  <p>These are built automatically. ${state.figures.length} figure(s), ${state.tables.length} table(s), ${state.abbrev.length} abbreviation(s) and ${state.symbols.length} symbol(s) so far.</p>
+  <button class="btn ghost" data-goto="figures">Open figures &amp; tables</button>
+</div>
+<div class="panel">
+  <h3>Back matter</h3>
+  <div class="row" style="gap:16px;margin-bottom:10px">
+    <label class="tiny"><input type="checkbox" data-model="front.includeAbbrev" data-live="1"> List of abbreviations</label>
+    <label class="tiny"><input type="checkbox" data-model="front.includePubs" data-live="1"> List of publications</label>
+    <label class="tiny"><input type="checkbox" data-model="front.includeBiodata" data-live="1"> Brief bio-data</label>
+  </div>
+  <label class="f"><span>Bio-data (leave blank for a generated one)</span><textarea data-model="front.biodata" rows="4"></textarea></label>
+  <h4 style="font-size:12.5px;margin:12px 0 6px">Which chapters draw on which paper</h4>
+  <table class="data"><thead><tr><th>Paper</th><th>Venue</th><th>Feeds chapters</th></tr></thead><tbody>
+  ${chapterMap().map(r=>`<tr><td><span class="chip" style="border-color:${r.p.color}">${r.p.code}</span> ${esc(r.p.title.slice(0,70))}</td><td class="mut">${esc(r.p.venue||'—')}</td><td>${r.chapters.length?r.chapters.join(', '):'<span class="no">not used</span>'}</td></tr>`).join('')}
+  </tbody></table>
+  <p class="hint">Examiners look for this. Many departments ask for it as a note in the declaration; it is included there automatically.</p>
+</div>`;
+
+VIEWS.refs = () => {
+  const keep = state.refs.filter(r=>r.keep);
+  const shared = state.refs.filter(r=>r.from.length>1);
+  return `
+<div class="stage-head"><h2>References</h2>
+<p>One list, merged from every paper, with duplicates folded together. ${shared.length} reference${shared.length===1?'':'s'} appeared in more than one paper.</p></div>
+<div class="panel">
+  <div class="row">
+    <button class="btn ghost sm" id="btnReharvest">Re-read from papers</button>
+    <button class="btn ghost sm" id="btnAddRef">Add a reference</button>
+    <button class="btn ghost sm" id="btnSortRefs">Sort A–Z</button>
+    <div class="spacer"></div>
+    <label class="f" style="margin:0"><span>Style you are following</span><input type="text" data-model="format.refStyle" style="width:200px"></label>
+  </div>
+  <p class="hint">Entries are kept exactly as they appeared in your papers. Merging does not restyle them — run the merged list through your reference manager if the papers used different styles.</p>
+</div>
+<div class="panel">
+  <h3>Citations against the list</h3>
+  ${(()=>{const c=auditCitations(); return `
+  <p>${c.total} distinct author–year citation${c.total===1?'':'s'} found in the placed text.${c.numericUsed?` Numeric citations up to [${c.numericMax}] are also present — mixed styles usually mean one paper used a different convention.`:''}</p>
+  ${c.orphans.length? `<div class="flag"><h5>${c.orphans.length} citation${c.orphans.length===1?'':'s'} with no matching reference</h5>
+    <p>${c.orphans.slice(0,24).map(o=>esc(o.sur)+' '+esc(o.yr)).join(' · ')}${c.orphans.length>24?' …':''}</p></div>`:''}
+  ${c.uncited.length? `<div class="flag warn"><h5>${c.uncited.length} reference${c.uncited.length===1?'':'s'} never cited</h5>
+    <p>Carried over from paper text you did not use. Examiners notice these.</p>
+    <div class="row" style="margin-top:7px"><button class="btn ghost sm" id="btnDropUncited">Set them aside</button></div></div>`:''}
+  ${(!c.orphans.length && !c.uncited.length && c.total)? '<div class="empty"><strong>Every citation resolves</strong>Nothing cited is missing, and nothing listed is unused.</div>':''}`;})()}
+</div>
+<div class="panel">
+  <table class="data"><thead><tr><th style="width:30px"></th><th>Reference</th><th style="width:90px">From</th><th style="width:26px"></th></tr></thead><tbody>
+  ${state.refs.map(r=>`<tr>
+    <td><input type="checkbox" data-refkeep="${r.id}" ${r.keep?'checked':''}></td>
+    <td><input type="text" data-refraw="${r.id}" value="${esc(r.raw)}" style="border:0;padding:1px 2px;font-size:12px"></td>
+    <td>${r.from.map(id=>{const p=state.papers.find(x=>x.id===id);return p?`<span class="chip" style="border-color:${p.color}">${p.code}</span>`:'';}).join(' ')}</td>
+    <td><button class="btn danger sm" data-delref="${r.id}">×</button></td></tr>`).join('') || '<tr><td colspan="4" class="mut tiny">No references picked up. Make sure each paper\u2019s reference list is labelled “Reference list” on the Segments step, then re-read.</td></tr>'}
+  </tbody></table>
+  <p class="tiny mut" style="margin-top:8px">${keep.length} in the thesis · ${state.refs.length-keep.length} set aside</p>
+</div>`;
+};
+
+VIEWS.proof = () => {
+  const checks = complianceChecks();
+  const fails = checks.filter(c=>!c.ok);
+  return `
+<div class="stage-head"><h2>Proof check</h2>
+<p>${fails.length ? fails.length+' thing'+(fails.length===1?'':'s')+' to settle before this is submittable.' : 'Everything on the list is clear.'}</p></div>
+<div class="panel">
+  <h3>Against the format profile</h3>
+  ${checks.map(c=>`<div class="check">
+    <span class="check-m ${c.ok?'ok':'no'}">${c.ok?'✓':'✗'}</span>
+    <span><b style="font-weight:${c.ok?400:600}">${esc(c.txt)}</b>${c.note?`<br><span class="mut tiny">${esc(c.note)}</span>`:''}</span>
+  </div>`).join('')}
+</div>
+<div class="panel">
+  <h3>Balance across the thesis</h3>
+  <table class="data"><thead><tr><th>Chapter</th><th style="width:80px">Words</th><th>Sources</th></tr></thead><tbody>
+  ${state.skeleton.filter(n=>n.kind==='chapter').map(ch=>{
+    const idx=state.skeleton.indexOf(ch); let wc=0; const src=new Set();
+    for(let i=idx;i<state.skeleton.length;i++){
+      if(i>idx && state.skeleton[i].kind==='chapter') break;
+      state.skeleton[i].blocks.forEach(b=>{const s=segById(b.segId); if(s){wc+=s.wc; const p=paperOfSeg(s.id); if(p)src.add(p.id);}});
+    }
+    return `<tr><td><b>${numberOf(ch)}</b> ${esc(ch.title)}</td><td>${wc?wc.toLocaleString():'<span class="no">empty</span>'}</td>
+    <td>${[...src].map(id=>{const p=state.papers.find(x=>x.id===id);return `<span class="chip" style="border-color:${p.color}">${p.code}</span>`;}).join(' ')||'<span class="mut">—</span>'}</td></tr>`;
+  }).join('')}
+  </tbody></table>
+  <p class="hint">A chapter drawing on one paper only is normal for a study chapter. An introduction or discussion that draws on one paper only usually means synthesis is still missing.</p>
+</div>
+<div class="panel">
+  <h3>Before you submit</h3>
+  <div class="check"><span class="check-m mid">!</span><span>Run the plagiarism check your department requires. A compilation thesis will flag against your own published papers — that is expected, but keep the publisher permissions and the List of Publications ready to explain it.</span></div>
+  <div class="check"><span class="check-m mid">!</span><span>Check each publisher's policy on reusing your accepted manuscript in a thesis. Most permit it; some want a written request.</span></div>
+  <div class="check"><span class="check-m mid">!</span><span>Confirm the current format circular with the PG section and your department. The profile here follows the common IIT Delhi settings, but circulars change.</span></div>
+  <div class="check"><span class="check-m mid">!</span><span>Page numbers in the table of contents fill in once the file is opened in Word — the tool cannot know where pages break.</span></div>
+</div>`;
+};
+
+VIEWS.format = () => {
+  const f = state.format;
+  return `
+<div class="stage-head"><h2>Format profile</h2>
+<p>Everything the exported document obeys. Loaded with the settings IIT Delhi theses normally use; change any of them to match the circular your department hands you.</p></div>
+<div class="panel">
+  <h3>Page and margins</h3>
+  <p>Millimetres. The binding margin is the left margin on single-sided printing, the inner margin on double-sided.</p>
+  <div class="grid g3">
+    <label class="f"><span>Page width</span><input type="number" data-model="format.pageW"></label>
+    <label class="f"><span>Page height</span><input type="number" data-model="format.pageH"></label>
+    <label class="f"><span>Binding margin</span><input type="number" data-model="format.marginBind"></label>
+    <label class="f"><span>Outer margin</span><input type="number" data-model="format.marginOuter"></label>
+    <label class="f"><span>Top margin</span><input type="number" data-model="format.marginTop"></label>
+    <label class="f"><span>Bottom margin</span><input type="number" data-model="format.marginBottom"></label>
+  </div>
+  <label class="tiny"><input type="checkbox" data-model="format.mirror"> Mirror margins for double-sided printing</label>
+</div>
+<div class="panel">
+  <h3>Type</h3>
+  <div class="grid g3">
+    <label class="f"><span>Body typeface</span><input type="text" data-model="format.bodyFont"></label>
+    <label class="f"><span>Body size (pt)</span><input type="number" step="0.5" data-model="format.bodySize"></label>
+    <label class="f"><span>Line spacing</span><input type="number" step="0.05" data-model="format.lineSpacing"></label>
+    <label class="f"><span>Chapter title (pt)</span><input type="number" data-model="format.chapterSize"></label>
+    <label class="f"><span>Section heading (pt)</span><input type="number" data-model="format.h1Size"></label>
+    <label class="f"><span>Subsection (pt)</span><input type="number" data-model="format.h2Size"></label>
+    <label class="f"><span>Sub-subsection (pt)</span><input type="number" data-model="format.h3Size"></label>
+    <label class="f"><span>Caption size (pt)</span><input type="number" data-model="format.captionSize"></label>
+    <label class="f"><span>First-line indent (mm)</span><input type="number" data-model="format.indentMM"></label>
+  </div>
+  <div class="row" style="gap:16px">
+    <label class="tiny"><input type="checkbox" data-model="format.justify"> Justify body text</label>
+    <label class="tiny"><input type="checkbox" data-model="format.indentFirst"> Indent first line of paragraphs</label>
+    <label class="tiny"><input type="checkbox" data-model="format.chapterCaps"> Chapter titles in capitals</label>
+    <label class="tiny"><input type="checkbox" data-model="format.headingBold"> Bold headings</label>
+    <label class="tiny"><input type="checkbox" data-model="format.captionSingle"> Single-space captions</label>
+  </div>
+</div>
+<div class="panel">
+  <h3>References and numbering</h3>
+  <div class="grid g3">
+    <label class="f"><span>Reference size (pt)</span><input type="number" data-model="format.refSize"></label>
+    <label class="f"><span>Reference spacing</span><input type="number" step="0.05" data-model="format.refSpacing"></label>
+    <label class="f"><span>Abstract word cap</span><input type="number" data-model="format.abstractWordCap"></label>
+    <label class="f"><span>Front-matter numerals</span><select data-model="format.frontNumerals"><option value="roman-lower">i, ii, iii</option><option value="roman-upper">I, II, III</option><option value="none">none</option></select></label>
+    <label class="f"><span>Body numerals</span><select data-model="format.bodyNumerals"><option value="arabic">1, 2, 3</option></select></label>
+    <label class="f"><span>Page number position</span><select data-model="format.numberPosition"><option>bottom-centre</option><option>bottom-right</option><option>top-right</option></select></label>
+  </div>
+</div>
+<div class="panel">
+  <h3>Writing assist</h3>
+  <p>Optional. Inside Claude it works as-is. On your own hosting it needs a key, which is held in memory for this session only and never written to the project file.</p>
+  <label class="f"><span>API key (only if self-hosted)</span><input type="text" id="aiKey" value="${esc(state.ai.key)}" placeholder="sk-ant-…"></label>
+  ${state.ai.lastError?`<p class="hint no">Last attempt: ${esc(state.ai.lastError)}</p>`:''}
+</div>
+<div class="panel">
+  <div class="row"><button class="btn ghost" id="btnResetFormat">Reset to the IIT Delhi defaults</button></div>
+</div>`;
+};
+
+VIEWS.output = () => `
+<div class="stage-head"><h2>Preview &amp; export</h2>
+<p>What the compiled thesis looks like under the current profile. Word is the format to hand in; the LaTeX export is there if you would rather finish in Overleaf.</p></div>
+<div class="panel noprint">
+  <div class="row">
+    <button class="btn key" id="btnWord">Download Word (.doc)</button>
+    <button class="btn ghost" id="btnPrint">Print or save as PDF</button>
+    <button class="btn ghost" id="btnTex">LaTeX source</button>
+    <button class="btn ghost" id="btnMd">Markdown</button>
+    <div class="spacer"></div>
+    <span class="tiny mut">${(words(buildBody().replace(/<[^>]+>/g,' '))).toLocaleString()} words in the body</span>
+  </div>
+  <p class="hint">The Word file opens in Word, Pages and Google Docs. Open it and use Save As to get a .docx. Fields such as page numbers in the table of contents fill in there.</p>
+</div>
+<div class="sheetwrap" id="previewWrap">
+  <div class="docsheet" id="preview"></div>
+</div>`;
+
+VIEWS.help = () => `
+<div class="stage-head"><h2>Guide &amp; shortcuts</h2>
+<p>A compilation thesis is a routing problem before it is a writing problem. SynThesis takes that part off your hands and leaves you the part only you can do.</p></div>
+<div class="panel">
+  <h3>The idea in one paragraph</h3>
+  <p style="max-width:68ch">Each paper is cut into labelled pieces — its literature review, its method, its results. Each slot in your chapter list is marked with what it is <em>for</em>. Placement is then a matter of matching the two: every paper's literature review flows into the chapter marked “Literature review”, every study's method into the chapter scoped to that study. Nothing is guessed at behind your back; every rule and every placement is on screen and changeable.</p>
+</div>
+<div class="panel">
+  <h3>The eleven steps</h3>
+  <table class="data"><tbody>
+    <tr><td style="width:150px"><b>Where I am</b></td><td>Everything outstanding, the shape of the thesis, and snapshots you can return to.</td></tr>
+    <tr><td><b>Thesis details</b></td><td>Title page, certificate, declaration and publication list all come from here.</td></tr>
+    <tr><td><b>Papers</b></td><td>PDF, Word, text and Markdown read in the browser. Nothing is uploaded anywhere.</td></tr>
+    <tr><td><b>Segments</b></td><td>What the splitter thinks each part of each paper is. Correct it here — the highest-leverage screen in the tool.</td></tr>
+    <tr><td><b>Chapters</b></td><td>Structure, purpose of each slot, how far along it is, and a word target. Scope a chapter to one paper to keep a study together.</td></tr>
+    <tr><td><b>Placement</b></td><td>Where material lands. Place everything, then correct by hand and edit in place.</td></tr>
+    <tr><td><b>Stitching</b></td><td>Journal voice, dead cross-references, passages written twice, mixed spelling, drifting vocabulary.</td></tr>
+    <tr><td><b>Figures &amp; tables</b></td><td>Renumbered chapter-wise; add artwork and it lands where the caption sat.</td></tr>
+    <tr><td><b>References</b></td><td>Six lists merged into one, duplicates folded, every citation checked against it.</td></tr>
+    <tr><td><b>Front &amp; back matter</b></td><td>Everything that is not a chapter, built from what you have already entered.</td></tr>
+    <tr><td><b>Proof check</b></td><td>Format profile, citation integrity and the balance of sources across chapters.</td></tr>
+    <tr><td><b>Preview &amp; export</b></td><td>Word to hand in, PDF to read, LaTeX if you would rather finish in Overleaf.</td></tr>
+  </tbody></table>
+</div>
+<div class="panel">
+  <h3>Shortcuts</h3>
+  <table class="data"><tbody>
+    <tr><td style="width:150px"><kbd>Ctrl</kbd> <kbd>K</kbd></td><td>Find any chapter, section of a paper, reference or step</td></tr>
+    <tr><td><kbd>Ctrl</kbd> <kbd>S</kbd></td><td>Save the project file</td></tr>
+    <tr><td><kbd>Ctrl</kbd> <kbd>Z</kbd></td><td>Undo — every placement, edit and bulk change is reversible</td></tr>
+    <tr><td><kbd>Ctrl</kbd> <kbd>⇧</kbd> <kbd>Z</kbd></td><td>Redo</td></tr>
+    <tr><td><kbd>[</kbd> and <kbd>]</kbd></td><td>Previous and next step</td></tr>
+    <tr><td><kbd>Esc</kbd></td><td>Close a dialogue, or cancel a selected piece</td></tr>
+    <tr><td><kbd>?</kbd></td><td>This page</td></tr>
+  </tbody></table>
+</div>
+<div class="panel">
+  <h3>What it will not do</h3>
+  <p style="max-width:68ch">It will not write your argument. A thesis is not six papers in a row — the difference is the connective tissue: the synthesis chapter that reads the studies against each other, the framing that turns six separate contributions into one. The mechanical work is what this tool clears, so that the connective tissue is where your time goes.</p>
+  <p style="max-width:68ch">It also cannot confirm your department's current format circular. The profile follows the settings IIT Delhi theses normally use — A4, Times New Roman at 12 pt, one-and-a-half spacing, a 35 mm binding margin and 25 mm elsewhere, roman numerals in the front matter — but check it against what the PG section gives you and change anything that differs.</p>
+</div>
+<div class="panel">
+  <h3>Your work</h3>
+  <p>Nothing leaves the browser. Where the environment allows it, your work is kept between visits automatically; where it does not, the project file is the only copy. Either way, save the file often — it holds everything, including the full text of your papers and any figure artwork.</p>
+  <div class="row"><button class="btn ghost" id="btnWelcomeAgain">Show the opening screen again</button></div>
+</div>`;
+
+/* =====================================================================
+   12b. HISTORY, AUTOSAVE, GAPS, CITATIONS, CONSISTENCY
+   ===================================================================== */
+const KEYS = ['meta','format','papers','skeleton','front','abbrev','figures','tables','refs','recastLog','symbols','glossary','snapshots','ui'];
+const serialise = () => JSON.stringify(Object.fromEntries(KEYS.map(k=>[k,state[k]])));
+function restore(str){ const d=JSON.parse(str); KEYS.forEach(k=>{ if(d[k]!==undefined) state[k]=d[k]; }); normaliseSkeleton(); }
+
+const past=[], future=[]; let dirty=false, savedAt=null, autoTimer=null;
+let memo = {};
+const clearMemo = () => { memo = {}; };
+function cached(key, fn){ if(!(key in memo)) memo[key] = fn(); return memo[key]; }
+function mark(label){
+  clearMemo();
+  past.push({label, data:serialise()});
+  if(past.length>40) past.shift();
+  future.length = 0;
+  dirty = true;
+  clearTimeout(autoTimer); autoTimer = setTimeout(autosave, 2500);
+}
+function undo(){
+  if(!past.length) return toast('Nothing to undo.');
+  const step = past.pop();
+  future.push({label:step.label, data:serialise()});
+  restore(step.data); toast('Undone: '+step.label); dirty=true; render();
+}
+function redo(){
+  if(!future.length) return toast('Nothing to redo.');
+  const step = future.pop();
+  past.push({label:step.label, data:serialise()});
+  restore(step.data); toast('Redone: '+step.label); dirty=true; render();
+}
+const hasStore = () => !!(window.storage && window.storage.set);
+async function autosave(){
+  if(!hasStore()) return;
+  try{ await window.storage.set('synthesis:project', serialise()); savedAt=Date.now(); dirty=false; updateChrome(); }
+  catch(e){ /* keeps working without it */ }
+}
+async function loadAutosave(){
+  if(!hasStore()) return false;
+  try{ const r = await window.storage.get('synthesis:project'); if(r && r.value){ restore(r.value); savedAt=Date.now(); return true; } }
+  catch(e){}
+  return false;
+}
+function snapNamed(name){
+  mark('take a snapshot');
+  state.snapshots.unshift({id:uid('v'), name:name||('Snapshot '+(state.snapshots.length+1)), when:new Date().toISOString(), data:serialise()});
+  state.snapshots = state.snapshots.slice(0,12);
+}
+
+/* ---------- what is still missing ---------- */
+const TODO_RE = /\[(?:TODO|TK|XXX?)\b[^\]]*\]|\bTODO:/gi;
+function gaps(){ return cached('gaps', _gaps); }
+function _gaps(){
+  const g=[];
+  const add=(tone,txt,view,note)=>g.push({tone,txt,view,note:note||''});
+  if(!state.papers.length) add('red','No papers added yet','papers','Everything downstream needs at least one paper.');
+  if(!M('title')) add('red','Thesis title missing','setup');
+  if(!M('author')||!M('entryNo')) add('red','Candidate name or entry number missing','setup','Both appear on the title page.');
+  if(!M('supervisor')) add('red','Supervisor not named','setup','Needed for the certificate.');
+  const loose = state.papers.flatMap(p=>p.segments.filter(s=>!s.placedIn && !HELD.includes(s.label)));
+  if(loose.length) add('amb', loose.length+' piece'+(loose.length===1?'':'s')+' of your papers not placed','route','Nothing is lost, but it will not appear in the thesis.');
+  state.skeleton.filter(isHead).forEach(ch=>{
+    const w = chapterWords(ch);
+    if(!w) add('amb','Chapter '+numberOf(ch)+' “'+ch.title+'” is empty','route');
+    else if(ch.target && w < ch.target*0.4) add('blu','Chapter '+numberOf(ch)+' is well under its target','skeleton', w.toLocaleString()+' of '+ch.target.toLocaleString()+' words.');
+  });
+  let todo=0;
+  state.skeleton.forEach(n=>n.blocks.forEach(b=>{
+    const s = b.kind==='bridge' ? b : segById(b.segId);
+    if(s && s.text) todo += (s.text.match(TODO_RE)||[]).length;
+  }));
+  if(todo) add('amb', todo+' TODO marker'+(todo===1?'':'s')+' left in the text','stitch','Anything you wrote as [TODO …] or TK.');
+  const xr = (allPlacedText().match(/\[cross-reference to update\]/g)||[]).length;
+  if(xr) add('red', xr+' cross-reference'+(xr===1?'':'s')+' still to point somewhere','stitch');
+  if(!state.front.abstract.trim()) add('red','Abstract not written','front');
+  if(!state.front.acknowledgement.trim()) add('amb','Acknowledgement not written','front');
+  const noimg = state.figures.filter(f=>f.newNo && !f.img).length;
+  if(noimg) add('blu', noimg+' figure'+(noimg===1?'':'s')+' without an image','figures','Captions are in place; the artwork is not.');
+  if(!state.refs.filter(r=>r.keep).length && state.papers.length) add('red','No references merged','refs');
+  const cit = auditCitations();
+  if(cit.orphans.length) add('red', cit.orphans.length+' citation'+(cit.orphans.length===1?'':'s')+' with no matching reference','refs');
+  if(cit.uncited.length) add('blu', cit.uncited.length+' reference'+(cit.uncited.length===1?'':'s')+' never cited','refs','Carried over from a paper whose text you did not use.');
+  const noMeta = state.papers.filter(p=>!p.venue||!p.year);
+  if(noMeta.length) add('amb', noMeta.length+' paper'+(noMeta.length===1?'':'s')+' missing venue or year','papers','Needed for the List of Publications.');
+  const sp = spellingSplit();
+  if(sp.split) add('blu','Spelling is mixed between British and American','stitch', sp.brit+' British and '+sp.amer+' American spellings found.');
+  return g;
+}
+
+/* ---------- citations ---------- */
+function auditCitations(){ return cached('cit', _auditCitations); }
+function _auditCitations(){
+  const text = allPlacedText();
+  const cited = new Map();
+  const addCite = (sur,yr) => { const k=(sur+'|'+yr).toLowerCase(); if(!cited.has(k)) cited.set(k,{sur,yr,n:0}); cited.get(k).n++; };
+  const NAME = "[A-Z][A-Za-zÀ-ÿ'’\\-]{1,}";
+  let m;
+  const par = /\(([^()]{4,240})\)/g;
+  while((m = par.exec(text))){
+    const inner = m[1];
+    const re = new RegExp(NAME + "(?:\\s+(?:et al\\.?|and\\s+" + NAME + "|&\\s*" + NAME + "))?,?\\s*((?:19|20)\\d{2}[a-z]?)", 'g');
+    let x; while((x = re.exec(inner))) addCite(x[0].match(new RegExp(NAME))[0], x[1]);
+  }
+  const nar = new RegExp("\\b(" + NAME + ")(?:\\s+(?:et al\\.?|and\\s+" + NAME + "|&\\s*" + NAME + "))?\\s*\\(((?:19|20)\\d{2}[a-z]?)\\)", 'g');
+  while((m = nar.exec(text))) addCite(m[1], m[2]);
+  const listed = state.refs.filter(r=>r.keep).map(r=>{
+    const sur = (r.raw.match(/^\s*([A-ZÀ-Ý][A-Za-zÀ-ÿ'’\-]{1,})/)||[,''])[1]||'';
+    const yr  = (r.raw.match(/\((\d{4}[a-z]?)\)/)||r.raw.match(/\b((?:19|20)\d{2})\b/)||[,''])[1]||'';
+    return {ref:r, sur, yr, hit:false};
+  });
+  const orphans=[];
+  for(const c of cited.values()){
+    const hit = listed.find(l => l.sur.toLowerCase()===c.sur.toLowerCase() && l.yr.replace(/[a-z]$/,'')===c.yr.replace(/[a-z]$/,''));
+    if(hit) hit.hit = true; else orphans.push(c);
+  }
+  const numeric = [...text.matchAll(/\[(\d{1,3})(?:\s*[,–-]\s*\d{1,3})*\]/g)].map(x=>+x[1]);
+  return {orphans, uncited: listed.filter(l=>!l.hit).map(l=>l.ref), total: cited.size,
+    numericMax: numeric.length?Math.max(...numeric):0, numericUsed: numeric.length>0};
+}
+
+/* ---------- spelling and terminology ---------- */
+const SPELL = [
+  ['analyse','analyze'],['analysed','analyzed'],['analysing','analyzing'],['behaviour','behavior'],['behavioural','behavioral'],
+  ['categorise','categorize'],['categorised','categorized'],['centre','center'],['centred','centered'],['colour','color'],
+  ['conceptualise','conceptualize'],['characterise','characterize'],['emphasise','emphasize'],['favour','favor'],['fulfil','fulfill'],
+  ['generalise','generalize'],['generalisability','generalizability'],['labelled','labeled'],['labelling','labeling'],
+  ['modelled','modeled'],['modelling','modeling'],['organisation','organization'],['organisational','organizational'],
+  ['operationalise','operationalize'],['practise','practice'],['programme','program'],['prioritise','prioritize'],
+  ['recognise','recognize'],['summarise','summarize'],['standardise','standardize'],['theorise','theorize'],
+  ['utilise','utilize'],['visualise','visualize'],['visualisation','visualization'],['sceptical','skeptical'],
+  ['acknowledgement','acknowledgment'],['judgement','judgment'],['enquiry','inquiry'],
+  /* reported but never converted: both forms are correct in some sense */
+  ['practise','practice',1],['programme','program',1],['towards','toward',1],['learnt','learned',1],['whilst','while',1]
+];
+function spellingSplit(){ return cached('spell', ()=>{
+  const freq = new Map();
+  for(const w of (allPlacedText().toLowerCase().match(/[a-z]+/g)||[])) freq.set(w,(freq.get(w)||0)+1);
+  let brit=0, amer=0; const detail=[];
+  SPELL.forEach(([b,a,risky])=>{
+    const nb = freq.get(b)||0, na = freq.get(a)||0;
+    if(!risky){ brit+=nb; amer+=na; }
+    if(nb&&na) detail.push({b,a,nb,na,risky:!!risky});
+  });
+  return {brit, amer, detail, split: brit>0 && amer>0};
+}); }
+function harmoniseSpelling(target){
+  mark('harmonise spelling');
+  let n=0;
+  state.papers.forEach(p=>p.segments.forEach(s=>{
+    if(!s.placedIn) return;
+    SPELL.forEach(([b,a,risky])=>{
+      if(risky) return;
+      const from = target==='british'? a : b, to = target==='british'? b : a;
+      const re = new RegExp('\\b'+from+'\\b','g');
+      n += (s.text.match(re)||[]).length;
+      s.text = s.text.replace(re,to);
+      const Re = new RegExp('\\b'+from[0].toUpperCase()+from.slice(1)+'\\b','g');
+      n += (s.text.match(Re)||[]).length;
+      s.text = s.text.replace(Re, to[0].toUpperCase()+to.slice(1));
+    });
+    s.wc = words(s.text);
+  }));
+  state.ui.spelling = target;
+  return n;
+}
+function glossaryScan(){
+  return state.glossary.filter(g=>g.term).map(g=>{
+    const variants = (g.variants||'').split(',').map(v=>v.trim()).filter(Boolean);
+    const t = allPlacedText();
+    return {g, hits: variants.map(v=>({v, n:(t.match(new RegExp('\\b'+v.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','gi'))||[]).length})).filter(x=>x.n)};
+  }).filter(x=>x.hits.length);
+}
+function applyGlossary(){
+  mark('apply preferred terms');
+  let n=0;
+  state.glossary.filter(g=>g.term).forEach(g=>{
+    (g.variants||'').split(',').map(v=>v.trim()).filter(Boolean).forEach(v=>{
+      const re = new RegExp('\\b'+v.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','gi');
+      state.papers.forEach(p=>p.segments.forEach(s=>{
+        if(!s.placedIn) return;
+        n += (s.text.match(re)||[]).length;
+        s.text = s.text.replace(re, g.term);
+        s.wc = words(s.text);
+      }));
+    });
+  });
+  return n;
+}
+
+/* ---------- guided steps ---------- */
+const STEPS = [
+  ['home','Where I am'], ['setup','Thesis details'], ['papers','Papers'], ['segments','Segments'],
+  ['skeleton','Chapters'], ['route','Placement'], ['stitch','Stitching'], ['figures','Figures & tables'],
+  ['refs','References'], ['front','Front & back matter'], ['proof','Proof check'], ['output','Preview & export']
+];
+const WHY = {
+  home:'Everything that still needs doing, in one place.',
+  setup:'Fills the title page, certificate, declaration and publication list.',
+  papers:'Read straight from PDF or Word. Nothing is uploaded anywhere.',
+  segments:'The highest-leverage screen here: these labels decide where every piece lands.',
+  skeleton:'Your structure, and what each slot is for. Scope a chapter to one paper to keep a study together.',
+  route:'Place everything at once, then correct what looks wrong.',
+  stitch:'Six papers stitched together still sound like six papers. This is where that stops.',
+  figures:'Renumbered chapter-wise. Add the artwork so figures appear in the compiled file.',
+  refs:'One merged list, duplicates folded, citations checked against it.',
+  front:'Everything that is not a chapter, built from what you have already entered.',
+  proof:'The format profile and the balance of the thesis, checked.',
+  output:'Word to hand in, PDF to read, LaTeX if you would rather finish in Overleaf.'
+};
+function stepNav(){
+  const i = STEPS.findIndex(s=>s[0]===state.view);
+  if(i<0) return '';
+  const prev = STEPS[i-1], next = STEPS[i+1];
+  return `<div class="stepnav noprint">
+    ${prev?`<button class="btn ghost" data-goto="${prev[0]}">← ${esc(prev[1])}</button>`:''}
+    <span class="why">${esc(WHY[state.view]||'')}</span>
+    ${next?`<button class="btn key" data-goto="${next[0]}">${esc(next[1])} →</button>`:''}
+  </div>`;
+}
+
+/* ---------- sample project ---------- */
+const SAMPLE = [
+["Repositories of design methods: a gap analysis","Abstract\nDesign methods are widely taught but sparsely used. This paper reports a gap analysis of nine digital repositories of design methods. We find that repositories privilege breadth of coverage over the situated information practitioners need at the point of use.\n\n1. Introduction\nDesign methods have proliferated since the 1960s, yet uptake in industrial practice remains uneven. The problem this paper addresses is the mismatch between how methods are documented and how they are actually selected.\n\n2. Related work\nPrior work on design method repositories has focused largely on taxonomy. Blessing and Chakrabarti (2009) proposed the Design Research Methodology (DRM) as a way of structuring design research. Several authors have catalogued methods without attending to the information needs of those selecting them. The literature on method selection is thin, and what exists tends to assume a rational selector with full information.\n\nFigure 1. Nine repositories arranged by coverage and depth.\n\n2.1 Research gap\nNo study has yet examined what information a practitioner needs at the moment of selecting a method. This gap motivates the present study.\n\n3. Method\nWe conducted a structured content analysis of nine repositories. Two coders independently coded each repository against a seventeen-element scheme, and inter-coder agreement was substantial.\n\n3.1 Participants\nTwo coders, both doctoral researchers in design, carried out the coding.\n\n4. Results\nTable 1 reports coverage across the nine repositories. Coverage of procedural information was high; coverage of contextual information was low. Only two repositories reported any evidence of method effectiveness.\n\nTable 1. Coverage of information elements across nine repositories.\n\n5. Discussion\nIn this paper we have shown that the information architecture of these tools reflects an authorial rather than a selectional logic. The findings suggest that repositories are built by method authors rather than method users.\n\n6. Limitations\nThe sample of nine repositories is small and skewed towards English-language tools.\n\n7. Conclusion\nRepositories need to be rebuilt around selection rather than cataloguing.\n\nReferences\nBlessing, L. T. M., & Chakrabarti, A. (2009). DRM, a Design Research Methodology. Springer.\nCross, N. (2006). Designerly Ways of Knowing. Springer.\nDaalhuizen, J., & Cash, P. (2021). Method content theory. Design Studies, 75, 101018."],
+["What practitioners need from a method repository","Abstract\nThis paper reports an interview study with twenty-four design practitioners on their information needs when selecting design methods. Three needs dominate: evidence of use, adaptation guidance, and effort estimates.\n\n1 Introduction\nDesign methods are documented for teaching rather than for use. This paper asks what practitioners themselves say they need.\n\n2 Background and related work\nPrior work on design method repositories has focused largely on taxonomy. Blessing and Chakrabarti (2009) proposed the Design Research Methodology as a way of structuring design research. Method selection has been studied in engineering design but rarely from the practitioner's point of view.\n\n3 Methodology\nTwenty-four practitioners were interviewed using a semi-structured protocol. Interviews lasted forty to sixty minutes and were transcribed verbatim.\n\n3.1 Participants\nParticipants were recruited from three consultancies and two product firms. Median experience was seven years.\n\n3.2 Data analysis\nTranscripts were analyzed thematically following Braun and Clarke (2006).\n\n4 Findings\nThree themes were constructed. Practitioners want evidence that a method has worked elsewhere, they want to know how far a method can be bent, and they want to know what it will cost them in time.\n\nTable 1. Frequency of themes across twenty-four interviews.\n\n5 Discussion\nThese findings extend the account of method selection offered in earlier work. Due to space limitations we do not report the full coding frame here.\n\n6 Conclusion and future work\nRepositories should carry evidence, adaptation guidance and effort estimates. Future work should test whether these elements change selection behavior.\n\nReferences\nBlessing, L. T. M., & Chakrabarti, A. (2009). DRM, a Design Research Methodology. Springer.\nBraun, V., & Clarke, V. (2006). Using thematic analysis in psychology. Qualitative Research in Psychology, 3(2), 77-101.\nDaalhuizen, J., & Cash, P. (2021). Method content theory. Design Studies, 75, 101018."],
+["Designing and validating a method repository","Abstract\nThis paper reports the design and validation of a repository built around a seventeen-element information structure for design methods, and its evaluation with thirty-one users.\n\n1 Introduction\nThe two preceding studies established what is missing and what is needed. This paper describes what was built in response.\n\n2 Related work\nExisting repository interfaces are catalogues. Work on information architecture for professional tools suggests that selection tasks need comparison affordances rather than alphabetical lists.\n\n3 Requirements\nSeventeen information elements were derived from the interview findings and organised into four groups: identity, procedure, evidence and fit.\n\n4 Design and implementation\nThe repository was implemented as a browser-based tool with faceted filtering, side-by-side comparison and an effort indicator for each method.\n\nFigure 1. Architecture of the repository.\n\n5 Evaluation\nThirty-one participants completed six selection tasks. Selection time fell by a third against a conventional catalogue, and confidence ratings rose.\n\nTable 1. Task completion times and confidence ratings.\n\n6 Discussion\nThe evaluation supports the claim that selection-oriented structure changes behaviour, not merely satisfaction.\n\n7 Limitations\nThe evaluation was a laboratory study; sustained use in practice was not observed.\n\n8 Conclusion and future work\nA selection-oriented repository is feasible and effective. Longitudinal deployment is the obvious next step.\n\nReferences\nBlessing, L. T. M., & Chakrabarti, A. (2009). DRM, a Design Research Methodology. Springer.\nDaalhuizen, J., & Cash, P. (2021). Method content theory. Design Studies, 75, 101018.\nNielsen, J. (1994). Usability Engineering. Morgan Kaufmann."]
+];
+function loadSample(){
+  mark('load the sample thesis');
+  state.papers=[]; state.refs=[]; state.figures=[]; state.tables=[];
+  Object.assign(state.meta,{title:'Supporting the selection of design methods in practice', author:'A. Candidate',
+    entryNo:'2020DZZ0000', dept:'Department of Design', supervisor:'Prof. Supervisor Name', month:'December', year:'2026',
+    keywords:'design methods, repositories, method selection'});
+  SAMPLE.forEach(([t,raw],i)=>{ const p = addPaper(t+'.txt', raw); p.title=t; p.year='202'+(3+i); p.venue=i?'Proc. ICED':'Design Science'; p.type=i?'Conference paper':'Journal article'; p.authors='Candidate, A., & Supervisor, S.'; });
+  state.skeleton = PRESETS.compilation();
+  autoPlace(false); renumberCaptions(); detectAbbrev();
+  state.ui.welcomed = true;
+}
+
+/* =====================================================================
+   13. RENDER + EVENTS
+   ===================================================================== */
+function render(){
+  clearMemo();
+  const el = $('#stage');
+  el.innerHTML = (VIEWS[state.view]||VIEWS.home)();
+  if(!el.querySelector('.stepnav')) el.insertAdjacentHTML('beforeend', stepNav());
+  $$('.rail-btn').forEach(b=>b.classList.toggle('on', b.dataset.view===state.view));
+  fieldBind(el);
+  wire(el);
+  updateChrome();
+  updateDots();
+  if(state.view==='output') paintPreview();
+  window.scrollTo(0,0);
+}
+
+function updateDots(){
+  const set=(id,cls)=>{ const e=$('#'+id); if(e) e.className='rail-dot '+cls; };
+  const g = gaps();
+  set('dotHome', g.some(x=>x.tone==='red')?'attn': g.length?'part':'ok');
+  const meta = M('title')&&M('author')&&M('entryNo')&&M('supervisor')&&M('month');
+  set('dotSetup', meta?'ok':'attn');
+  const st = scanRecast().length + (spellingSplit().split?1:0);
+  set('dotStitch', state.papers.length ? (st?'part':'ok') : '');
+  set('dotFront', state.front.abstract.trim() && state.front.acknowledgement.trim() ? 'ok' : 'attn');
+  const bad = complianceChecks().filter(c=>!c.ok).length;
+  set('dotProof', bad? (bad>3?'attn':'part') : 'ok');
+}
+
+/* ---------- welcome ---------- */
+function showWelcome(){
+  $('#overlay').innerHTML = `<div class="veil"><div class="modal">
+    <h2>Turn your papers into a thesis</h2>
+    <p>SynThesis cuts each published paper into labelled pieces and routes them into the chapter where they belong — every literature review into the review chapter, each study's method and results into its own chapter — under IIT Delhi's format rules.</p>
+    <button class="choice" data-start="new"><b>Start a new thesis</b><span>Enter your details, add your papers, and work through eleven short steps.</span></button>
+    <button class="choice" data-start="open"><b>Open a project file</b><span>Continue from a .json you saved earlier.</span></button>
+    <button class="choice" data-start="sample"><b>Look around with a worked example</b><span>Three sample papers, already placed into chapters. Nothing of yours is touched.</span></button>
+  </div></div>`;
+  $$('[data-start]').forEach(b=>b.onclick=()=>{
+    const k=b.dataset.start;
+    state.ui.welcomed=true; $('#overlay').innerHTML='';
+    if(k==='sample'){ loadSample(); state.view='home'; toast('Sample thesis loaded. Everything is editable.'); }
+    else if(k==='open'){ $('#fileProject').click(); state.view='home'; }
+    else state.view='setup';
+    render();
+  });
+}
+
+/* ---------- find anything ---------- */
+function showPalette(){
+  const items = [];
+  STEPS.forEach(([v,t])=>items.push({t:'Go to '+t, k:'step', go:()=>{state.view=v;}}));
+  [['format','Format profile'],['help','Guide & shortcuts']].forEach(([v,t])=>items.push({t:'Go to '+t, k:'step', go:()=>{state.view=v;}}));
+  state.skeleton.forEach(n=>items.push({t:numberOf(n)+' '+n.title, k:isHead(n)?'chapter':'section', go:()=>{state.view='skeleton';}}));
+  state.papers.forEach(p=>p.segments.forEach(s=>items.push({t:p.code+' · '+s.heading, k:LABEL_NAME[s.label], go:()=>{state.view='segments';}})));
+  state.refs.forEach(r=>items.push({t:r.raw.slice(0,90), k:'reference', go:()=>{state.view='refs';}}));
+  $('#overlay').innerHTML = `<div class="palette"><div class="palette-box">
+    <input type="text" id="palQ" placeholder="Find a chapter, a section of a paper, a reference, or a step" autocomplete="off">
+    <div class="pal-list" id="palList"></div></div></div>`;
+  const q=$('#palQ'), list=$('#palList'); let sel=0, shown=[];
+  const draw=()=>{
+    const term=q.value.toLowerCase().trim();
+    shown = (term? items.filter(i=>i.t.toLowerCase().includes(term)) : items).slice(0,60);
+    list.innerHTML = shown.length? shown.map((i,n)=>`<div class="pal-item ${n===sel?'sel':''}" data-i="${n}"><span class="w">${esc(i.t)}</span><span class="chip">${esc(i.k)}</span></div>`).join('')
+      : '<div class="pal-item"><span class="w mut">Nothing matches that.</span></div>';
+    $$('.pal-item',list).forEach(el=>el.onclick=()=>pick(+el.dataset.i));
+  };
+  const pick=n=>{ const it=shown[n]; if(!it) return; $('#overlay').innerHTML=''; it.go(); render(); };
+  q.oninput=()=>{sel=0;draw();};
+  q.onkeydown=e=>{
+    if(e.key==='ArrowDown'){e.preventDefault();sel=Math.min(sel+1,shown.length-1);draw();}
+    else if(e.key==='ArrowUp'){e.preventDefault();sel=Math.max(sel-1,0);draw();}
+    else if(e.key==='Enter'){e.preventDefault();pick(sel);}
+    else if(e.key==='Escape'){$('#overlay').innerHTML='';}
+  };
+  $('.palette').onclick=e=>{ if(e.target.classList.contains('palette')) $('#overlay').innerHTML=''; };
+  draw(); q.focus();
+}
+
+function paintPreview(){
+  const f = state.format;
+  const pv = $('#preview');
+  pv.style.width = f.pageW+'mm';
+  pv.style.padding = `${f.marginTop}mm ${f.marginOuter}mm ${f.marginBottom}mm ${f.marginBind}mm`;
+  pv.innerHTML = `<style>${docStyles(false)}</style>` + buildDocument(false);
+}
+
+const PRESETS = {
+  dsrm: defaultSkeleton,
+  classic: () => {
+    const C=(t,r,b)=>({id:uid('n'),kind:'chapter',title:t,role:r,scope:'',brief:b||'',blocks:[]});
+    const S=(t,r)=>({id:uid('n'),kind:'section',title:t,role:r,scope:'',brief:'',blocks:[]});
+    return [C('Introduction','r_context'),S('Background','r_context'),S('Research gap','r_gap'),S('Objectives','r_aims'),
+      C('Literature review','r_lit'),S('State of the art','r_lit'),S('Synthesis','r_gap'),
+      C('Methodology','r_method'),S('Research design','r_method'),S('Data collection','r_studymeth'),S('Analysis','r_studymeth'),
+      C('Results and discussion','r_studyres'),S('Findings','r_studyres'),S('Discussion','r_studydisc'),S('Implications','r_implic'),
+      C('Conclusions','r_concl'),S('Conclusions','r_concl'),S('Limitations','r_limits'),S('Future work','r_future')];
+  },
+  compilation: () => {
+    const C=(t,r,scope)=>({id:uid('n'),kind:'chapter',title:t,role:r,scope:scope||'',brief:'',blocks:[]});
+    const S=(t,r,scope)=>({id:uid('n'),kind:'section',title:t,role:r,scope:scope||'',brief:'',blocks:[]});
+    const out=[C('Introduction','r_context'),S('Motivation','r_context'),S('Objectives','r_aims'),S('Structure of the thesis','none'),
+      C('Literature review','r_lit'),S('State of the art','r_lit'),S('Research gap','r_gap'),
+      C('Research methodology','r_method'),S('Overall design','r_method')];
+    state.papers.forEach((p,i)=>{
+      out.push(C('Study '+(i+1)+' — '+p.title.slice(0,52),'r_studyres',p.id));
+      out.push(S('Method','r_studymeth',p.id));
+      out.push(S('Results','r_studyres',p.id));
+      out.push(S('Discussion','r_studydisc',p.id));
+    });
+    out.push(C('Synthesis and discussion','r_synth'),S('Reading the studies together','r_synth'),S('Contributions','r_implic'),S('Limitations','r_limits'));
+    out.push(C('Conclusions and future work','r_concl'),S('Conclusions','r_concl'),S('Future work','r_future'));
+    return out;
+  },
+  blank: () => [{id:uid('n'),kind:'chapter',title:'Introduction',role:'r_context',scope:'',brief:'',blocks:[]}]
+};
+
+function wire(root){
+  /* jump links used all over the app */
+  bind('[data-goto]','click',e=>{ state.view=e.currentTarget.dataset.goto; state.picked=null; render(); },root);
+
+  /* snapshots */
+  const bs=$('#btnSnap',root);
+  if(bs) bs.onclick=()=>{ snapNamed(($('#snapName',root).value||'').trim()); toast('Snapshot taken.'); render(); };
+  bind('[data-restore]','click',e=>{
+    const s=state.snapshots.find(x=>x.id===e.currentTarget.dataset.restore); if(!s) return;
+    if(!confirm('Go back to \u201c'+s.name+'\u201d? Anything since then is replaced.')) return;
+    mark('restore a snapshot'); const keep=state.snapshots.slice(); restore(s.data); state.snapshots=keep; toast('Restored.'); render();
+  },root);
+  bind('[data-dropsnap]','click',e=>{ mark('delete a snapshot'); state.snapshots=state.snapshots.filter(s=>s.id!==e.currentTarget.dataset.dropsnap); render(); },root);
+
+  /* figures, tables, symbols */
+  const ff=$('#figFile',root);
+  if(ff){
+    bind('[data-upimg]','click',e=>{ ff.dataset.for=e.currentTarget.dataset.upimg; ff.click(); },root);
+    ff.onchange=()=>{
+      const file=ff.files[0]; if(!file) return;
+      const rec=state.figures.find(c=>c.id===ff.dataset.for); if(!rec) return;
+      const fr=new FileReader();
+      fr.onload=()=>{ mark('add figure artwork'); rec.img=fr.result; ff.value=''; toast('Artwork added to Figure '+(rec.newNo||rec.origNo)+'.'); render(); };
+      fr.readAsDataURL(file);
+    };
+  }
+  const af=$('#btnAddFig',root);
+  if(af) af.onclick=()=>{ mark('add a figure'); state.figures.push({id:uid('c'),paperId:'',kind:'figure',origNo:String(state.figures.length+1),caption:'',newNo:''}); render(); };
+  const at=$('#btnAddTbl',root);
+  if(at) at.onclick=()=>{ mark('add a table'); state.tables.push({id:uid('c'),paperId:'',kind:'table',origNo:String(state.tables.length+1),caption:'',newNo:''}); render(); };
+  const asy=$('#btnAddSym',root);
+  if(asy) asy.onclick=()=>{ mark('add a symbol'); state.symbols.push({id:uid('y'),sym:'',desc:'',unit:''}); render(); };
+  bind('[data-sym]','input',e=>{ const s=state.symbols.find(x=>x.id===e.target.dataset.sym); if(s){ s[e.target.dataset.symk]=e.target.value; dirty=true; } },root);
+  bind('[data-delsym]','click',e=>{ mark('delete a symbol'); state.symbols=state.symbols.filter(s=>s.id!==e.currentTarget.dataset.delsym); render(); },root);
+
+  /* spelling and preferred terms */
+  bind('[data-spell]','click',e=>{ state.ui.spelling=e.currentTarget.dataset.spell; render(); },root);
+  const sp=$('#btnSpell',root);
+  if(sp) sp.onclick=()=>{ const n=harmoniseSpelling(state.ui.spelling); toast(n?n+' spelling'+(n===1?'':'s')+' changed to '+state.ui.spelling+'.':'Nothing needed changing.'); render(); };
+  const ag=$('#btnAddGl',root);
+  if(ag) ag.onclick=()=>{ mark('add a preferred term'); state.glossary.push({id:uid('g'),term:'',variants:''}); render(); };
+  bind('[data-gl]','input',e=>{ const g=state.glossary.find(x=>x.id===e.target.dataset.gl); if(g){ g[e.target.dataset.glk]=e.target.value; dirty=true; } },root);
+  bind('[data-delgl]','click',e=>{ mark('delete a preferred term'); state.glossary=state.glossary.filter(g=>g.id!==e.currentTarget.dataset.delgl); render(); },root);
+  const apg=$('#btnApplyGl',root);
+  if(apg) apg.onclick=()=>{ const n=applyGlossary(); toast(n?n+' replacement'+(n===1?'':'s')+' made.':'No variants found in the text.'); render(); };
+
+  /* uncited references */
+  const du=$('#btnDropUncited',root);
+  if(du) du.onclick=()=>{ mark('set aside uncited references');
+    const un=auditCitations().uncited; un.forEach(r=>r.keep=false); toast(un.length+' set aside. Tick them back on if you need them.'); render(); };
+
+  /* chapter status and word targets */
+  bind('[data-nodestatus]','change',e=>{ const n=nodeById(e.target.dataset.nodestatus); if(n){ mark('change chapter status'); n.status=e.target.value; render(); } },root);
+  bind('[data-nodetarget]','input',e=>{ const n=nodeById(e.target.dataset.nodetarget); if(n){ n.target=parseInt(e.target.value)||0; dirty=true; } },root);
+
+  /* setup presets */
+  bind('[data-preset]','click',e=>{
+    mark('change the chapter shape');
+    const k=e.currentTarget.dataset.preset;
+    state.papers.forEach(p=>p.segments.forEach(s=>s.placedIn=null));
+    state.skeleton = PRESETS[k]();
+    toast('Chapter list replaced.'); render();
+  },root);
+
+  /* papers */
+  const fp = $('#filePapers',root);
+  if(fp){
+    $('#btnPick',root).onclick = ()=>fp.click();
+    fp.onchange = async e=>{
+      const files=[...e.target.files]; if(!files.length) return;
+      toast('Reading '+files.length+' file'+(files.length===1?'':'s')+'…');
+      for(const f of files){
+        try{ const t = await readAnyFile(f); if(!t.trim()){ toast('No text found in '+f.name); continue; } mark('add a paper'); addPaper(f.name, t); }
+        catch(err){ toast(err.message); }
+      }
+      fp.value=''; render();
+    };
+    $('#btnPaste',root).onclick = ()=>{ const b=$('#pasteBox',root); b.hidden=!b.hidden; };
+    $('#btnPasteAdd',root).onclick = ()=>{
+      const t=$('#pasteText',root).value;
+      if(!t.trim()) return toast('Paste the paper text first.');
+      mark('add a paper'); addPaper($('#pasteName',root).value||'Pasted paper', t); render();
+    };
+  }
+  bind('[data-paper]','input',e=>{
+    const p=state.papers.find(x=>x.id===e.target.dataset.paper);
+    if(p){ p[e.target.dataset.key]=e.target.value; updateChrome(); }
+  },root);
+  bind('[data-delpaper]','click',e=>{
+    const id=e.currentTarget.dataset.delpaper;
+    const p=state.papers.find(x=>x.id===id); if(!p) return;
+    if(!confirm('Remove '+p.code+' and everything placed from it?')) return;
+    mark('remove a paper');
+    p.segments.forEach(s=>unplaceSeg(s.id));
+    state.papers = state.papers.filter(x=>x.id!==id);
+    state.figures = state.figures.filter(c=>c.paperId!==id);
+    state.tables = state.tables.filter(c=>c.paperId!==id);
+    state.refs.forEach(r=>r.from=r.from.filter(x=>x!==id));
+    state.refs = state.refs.filter(r=>r.from.length);
+    state.papers.forEach((x,i)=>{ x.code='P'+(i+1); x.color=INK[i%INK.length]; });
+    render();
+  },root);
+  bind('[data-resplit]','click',e=>{
+    const p=state.papers.find(x=>x.id===e.currentTarget.dataset.resplit); if(!p) return;
+    mark('re-split a paper');
+    p.segments.forEach(s=>unplaceSeg(s.id));
+    let segs = segmentText(p.raw); if(segs.length<3) segs=segmentFallback(p.raw);
+    p.segments = segs; toast('Re-split into '+segs.length+' segments.'); render();
+  },root);
+
+  /* segments */
+  bind('[data-seglabel]','change',e=>{
+    const s=segById(e.target.dataset.seglabel); if(s){ mark('relabel a segment'); s.label=e.target.value; updateChrome(); }
+  },root);
+  bind('[data-viewseg]','click',e=>{
+    const s=segById(e.currentTarget.dataset.viewseg); if(!s) return;
+    const p=paperOfSeg(s.id);
+    $('#segReader',root).innerHTML = `<div class="panel" style="border-left:4px solid ${p.color}">
+      <div class="row"><h3 style="flex:1">${esc(s.heading)}</h3><button class="btn ghost sm" id="closeSeg">Close</button></div>
+      <p class="tiny mut">${p.code} · ${esc(LABEL_NAME[s.label])} · ${s.wc} words</p>
+      <textarea rows="14" data-segtext="${s.id}" style="font-family:var(--doc);font-size:14px">${esc(s.text)}</textarea>
+      <p class="hint">Edits here go into the thesis. Word counts update when you click away.</p></div>`;
+    $('#closeSeg',root).onclick=()=>{$('#segReader',root).innerHTML='';};
+    $(`[data-segtext="${s.id}"]`,root).addEventListener('change',ev=>{ s.text=ev.target.value; s.wc=words(s.text); updateChrome(); });
+    $('#segReader',root).scrollIntoView({behavior:'smooth',block:'nearest'});
+  },root);
+  const aiSeg = $('#btnAiSeg',root);
+  if(aiSeg) aiSeg.onclick = async ()=>{
+    aiSeg.disabled=true; aiSeg.textContent='Reading…';
+    for(const p of state.papers){
+      const list = p.segments.map((s,i)=>`${i}. "${s.heading}" — ${s.text.slice(0,180).replace(/\s+/g,' ')}`).join('\n');
+      const out = await assist(
+        `Label each numbered section of an academic paper with exactly one code from this list:\n${LABELS.map(([k,n])=>k+' = '+n).join('\n')}\n\nSections:\n${list}\n\nReply with only lines of the form index:code. No other text.`,
+        'You classify sections of academic papers. Reply only in the requested format.');
+      if(!out) break;
+      out.split('\n').forEach(line=>{
+        const m = line.match(/^\s*(\d+)\s*[:.]\s*([a-z]+)/i);
+        if(m && p.segments[+m[1]] && LABEL_NAME[m[2]]) p.segments[+m[1]].label = m[2];
+      });
+    }
+    render();
+  };
+
+  /* skeleton */
+  bind('[data-add]','click',e=>{
+    mark('add a heading');
+    state.skeleton.push({id:uid('n'),kind:e.currentTarget.dataset.add,title:'New '+e.currentTarget.dataset.add,role:'none',scope:'',brief:'',blocks:[]});
+    render();
+  },root);
+  bind('[data-nodetitle]','input',e=>{ const n=nodeById(e.target.dataset.nodetitle); if(n) n.title=e.target.value; },root);
+  bind('[data-noderole]','change',e=>{ const n=nodeById(e.target.dataset.noderole); if(n) n.role=e.target.value; },root);
+  bind('[data-nodescope]','change',e=>{ const n=nodeById(e.target.dataset.nodescope); if(n) n.scope=e.target.value; },root);
+  const move=(id,d)=>{ const i=state.skeleton.findIndex(n=>n.id===id); const j=i+d;
+    if(i<0||j<0||j>=state.skeleton.length) return;
+    [state.skeleton[i],state.skeleton[j]]=[state.skeleton[j],state.skeleton[i]]; render(); };
+  bind('[data-nodeup]','click',e=>move(e.currentTarget.dataset.nodeup,-1),root);
+  bind('[data-nodedown]','click',e=>move(e.currentTarget.dataset.nodedown,1),root);
+  bind('[data-nodedel]','click',e=>{
+    const n=nodeById(e.currentTarget.dataset.nodedel); if(!n) return;
+    if(n.blocks.length && !confirm('That slot holds '+n.blocks.length+' piece(s). They will be unplaced. Continue?')) return;
+    mark('delete a heading');
+    n.blocks.forEach(b=>{const s=segById(b.segId); if(s) s.placedIn=null;});
+    state.skeleton = state.skeleton.filter(x=>x.id!==n.id); render();
+  },root);
+
+  /* placement */
+  const auto = $('#btnAuto',root);
+  if(auto) auto.onclick=()=>{ mark('place everything'); const r=autoPlace(false); toast(`${r.placed} placed, ${r.skipped} left aside.`); render(); };
+  const autoL = $('#btnAutoLoose',root);
+  if(autoL) autoL.onclick=()=>{ mark('place the loose pieces'); const r=autoPlace(true); toast(`${r.placed} placed.`); render(); };
+  const clr = $('#btnClearAll',root);
+  if(clr) clr.onclick=()=>{ if(!confirm('Unplace everything?')) return; mark('unplace everything');
+    state.skeleton.forEach(n=>n.blocks=[]); state.papers.forEach(p=>p.segments.forEach(s=>s.placedIn=null)); state.picked=null; render(); };
+  const unp = $('#btnUnpick',root); if(unp) unp.onclick=()=>{ state.picked=null; render(); };
+  bind('[data-pick]','click',e=>{
+    const id=e.currentTarget.dataset.pick;
+    state.picked = state.picked===id ? null : id; render();
+  },root);
+  bind('[data-drop]','click',e=>{
+    if(!state.picked) return;
+    mark('place a piece');
+    placeSeg(state.picked, e.currentTarget.dataset.drop);
+    state.picked=null; renumberCaptions(); render();
+  },root);
+  bind('[data-editblk]','click',e=>{
+    e.stopPropagation();
+    const s=segById(e.currentTarget.dataset.editblk); if(!s) return;
+    const p=paperOfSeg(s.id), row=e.currentTarget.closest('.blk');
+    if(row.nextElementSibling && row.nextElementSibling.classList.contains('inline-edit')){ row.nextElementSibling.remove(); return; }
+    const box=document.createElement('div');
+    box.className='inline-edit';
+    box.innerHTML=`<p class="tiny mut" style="margin:6px 0 3px">${esc(p?p.code:'')} · ${esc(s.heading)} · ${s.wc} words</p>
+      <textarea rows="10" style="font-family:var(--doc);font-size:14px">${esc(s.text)}</textarea>
+      <p class="hint">Edits go straight into the thesis. Click away to keep them.</p>`;
+    row.after(box);
+    const ta=box.querySelector('textarea');
+    ta.addEventListener('change',()=>{ mark('edit text'); s.text=ta.value; s.wc=words(s.text); toast('Saved to '+(p?p.code:'the thesis')+'.'); render(); });
+    ta.focus();
+  },root);
+  bind('[data-unplace]','click',e=>{ e.stopPropagation(); mark('take a piece out'); unplaceSeg(e.currentTarget.dataset.unplace); renumberCaptions(); render(); },root);
+  const blkMove=(key,d)=>{ const [nid,bi]=key.split('|'); const n=nodeById(nid); const i=+bi, j=i+d;
+    if(!n||j<0||j>=n.blocks.length) return; [n.blocks[i],n.blocks[j]]=[n.blocks[j],n.blocks[i]]; render(); };
+  bind('[data-blkup]','click',e=>{e.stopPropagation();blkMove(e.currentTarget.dataset.blkup,-1);},root);
+  bind('[data-blkdown]','click',e=>{e.stopPropagation();blkMove(e.currentTarget.dataset.blkdown,1);},root);
+
+  /* stitch */
+  const rc = $('#btnRecast',root);
+  if(rc) rc.onclick=()=>{
+    const cats = $$('.recast-cat',root).filter(c=>c.checked).map(c=>c.value);
+    if(!cats.length) return toast('Pick at least one kind.');
+    mark('recast the voice');
+    const n = applyRecast(cats); toast(n+' passage'+(n===1?'':'s')+' recast.'); render();
+  };
+  const ov = $('#btnOverlap',root);
+  if(ov) ov.onclick=()=>{
+    ov.disabled=true; ov.textContent='Comparing…';
+    setTimeout(()=>{
+      const hits = findOverlaps();
+      $('#overlapOut',root).innerHTML = hits.length ? hits.slice(0,20).map(h=>`
+        <div class="flag">
+          <h5>${Math.round(h.j*100)}% shared wording · ${h.a.paper?h.a.paper.code:'?'} → ${esc(h.a.node.title)} &nbsp;vs&nbsp; ${h.b.paper?h.b.paper.code:'?'} → ${esc(h.b.node.title)}</h5>
+          <div class="quote">${esc(h.a.text.slice(0,240))}…</div>
+          <div class="quote">${esc(h.b.text.slice(0,240))}…</div>
+        </div>`).join('') + (hits.length>20?`<p class="tiny mut">…and ${hits.length-20} more pairs.</p>`:'')
+        : `<div class="empty"><strong>No repeated passages found</strong>Nothing above 16% shared wording between paragraphs from different papers.</div>`;
+      ov.disabled=false; ov.textContent='Look for repeats';
+    }, 30);
+  };
+  bind('[data-writebridge]','click',async e=>{
+    const n = nodeById(e.currentTarget.dataset.writebridge); if(!n) return;
+    const i = state.skeleton.indexOf(n);
+    const prev = state.skeleton.slice(0,i).reverse().find(x=>x.kind==='chapter');
+    const btn = e.currentTarget; btn.disabled=true; btn.textContent='Drafting…';
+    const out = await assist(
+      `Write a single linking paragraph, 70 to 110 words, that opens a PhD thesis chapter. It should recall what the previous chapter established and state what this chapter does, in an academic register, first person singular, British spelling. Do not use headings or lists.\n\nPrevious chapter: "${prev?prev.title:'the introduction'}"\nThis chapter: "${n.title}"\nWhat this chapter covers: ${n.brief||'see title'}\nThesis topic: ${M('title')||'a design research thesis'}`,
+      'You write connective prose for doctoral theses. Return only the paragraph.');
+    btn.disabled=false; btn.textContent='Draft one with writing assist';
+    if(!out) return;
+    n.blocks = n.blocks.filter(b=>!(b.kind==='bridge'&&b.at==='open'));
+    n.blocks.unshift({kind:'bridge', at:'open', text:out});
+    render();
+  },root);
+  bind('[data-bridge]','change',e=>{
+    const [nid] = e.target.dataset.bridge.split('|');
+    const n=nodeById(nid); if(!n) return;
+    n.blocks = n.blocks.filter(b=>!(b.kind==='bridge'&&b.at==='open'));
+    if(e.target.value.trim()) n.blocks.unshift({kind:'bridge',at:'open',text:e.target.value});
+  },root);
+
+  /* front matter */
+  const ba=$('#btnBuildAck',root);
+  if(ba) ba.onclick=()=>{ mark('draft the acknowledgement'); state.front.acknowledgement = genAcknowledgement(); render(); };
+  const da=$('#btnDraftAbstract',root);
+  if(da) da.onclick=async()=>{
+    const abs = state.papers.flatMap(p=>p.segments.filter(s=>s.label==='abstract').map(s=>p.code+': '+s.text));
+    if(!abs.length) return toast('No paper abstracts found. Label them on the Segments step.');
+    da.disabled=true; da.textContent='Drafting…';
+    const out = await assist(
+      `Write one PhD thesis abstract of ${Math.min(500,state.format.abstractWordCap)} words or fewer from these abstracts of the candidate's published papers. It must read as one continuous argument, not a summary of separate studies: state the problem, the approach, what was found across the studies, and the contribution. Academic register, first person singular where a voice is needed, British spelling, no headings or lists.\n\nThesis title: ${M('title')}\nChapters: ${state.skeleton.filter(n=>n.kind==='chapter').map(n=>n.title).join('; ')}\n\nPaper abstracts:\n${abs.join('\n\n')}`,
+      'You write abstracts for doctoral theses. Return only the abstract text.');
+    da.disabled=false; da.textContent='Draft from the paper abstracts';
+    if(out){ state.front.abstract = out; render(); }
+  };
+  const rn=$('#btnRenumber',root); if(rn) rn.onclick=()=>{ mark('renumber figures and tables'); renumberCaptions(); toast('Renumbered chapter-wise.'); render(); };
+  const ab=$('#btnAbbrev',root); if(ab) ab.onclick=()=>{ detectAbbrev(); toast(state.abbrev.length+' abbreviation(s).'); render(); };
+  const aab=$('#btnAddAbbrev',root); if(aab) aab.onclick=()=>{ state.abbrev.push({id:uid('a'),short:'',long:''}); render(); };
+  bind('[data-cap]','input',e=>{ const c=[...state.figures,...state.tables].find(x=>x.id===e.target.dataset.cap); if(c) c.caption=e.target.value; },root);
+  bind('[data-delcap]','click',e=>{ const id=e.currentTarget.dataset.delcap;
+    state.figures=state.figures.filter(c=>c.id!==id); state.tables=state.tables.filter(c=>c.id!==id); render(); },root);
+  bind('[data-ab]','input',e=>{ const a=state.abbrev.find(x=>x.id===e.target.dataset.ab); if(a) a[e.target.dataset.abk]=e.target.value; },root);
+  bind('[data-delab]','click',e=>{ state.abbrev=state.abbrev.filter(a=>a.id!==e.currentTarget.dataset.delab); render(); },root);
+
+  /* references */
+  const rh=$('#btnReharvest',root);
+  if(rh) rh.onclick=()=>{ mark('re-read the references'); state.refs=[]; state.papers.forEach(harvestRefs); toast(state.refs.length+' reference(s) merged.'); render(); };
+  const ar=$('#btnAddRef',root); if(ar) ar.onclick=()=>{ state.refs.unshift({id:uid('r'),key:uid('k'),raw:'',from:[],keep:true}); render(); };
+  const sr=$('#btnSortRefs',root); if(sr) sr.onclick=()=>{ sortRefs(); render(); };
+  bind('[data-refkeep]','change',e=>{ const r=state.refs.find(x=>x.id===e.target.dataset.refkeep); if(r){r.keep=e.target.checked; updateChrome();} },root);
+  bind('[data-refraw]','input',e=>{ const r=state.refs.find(x=>x.id===e.target.dataset.refraw); if(r) r.raw=e.target.value; },root);
+  bind('[data-delref]','click',e=>{ state.refs=state.refs.filter(r=>r.id!==e.currentTarget.dataset.delref); render(); },root);
+
+  /* format */
+  const wa=$('#btnWelcomeAgain',root); if(wa) wa.onclick=showWelcome;
+  const rf=$('#btnResetFormat',root); if(rf) rf.onclick=()=>{ mark('reset the format profile'); state.format=iitdFormat(); toast('Profile reset.'); render(); };
+  const ak=$('#aiKey',root); if(ak) ak.addEventListener('input',()=>{ state.ai.key=ak.value.trim(); });
+
+  /* output */
+  const bw=$('#btnWord',root); if(bw) bw.onclick=exportWord;
+  const bp=$('#btnPrint',root); if(bp) bp.onclick=()=>window.print();
+  const bt=$('#btnTex',root); if(bt) bt.onclick=exportLatex;
+  const bm=$('#btnMd',root); if(bm) bm.onclick=exportMarkdown;
+}
+
+/* rail + global */
+$$('.rail-btn').forEach(b=>b.addEventListener('click',()=>{ state.view=b.dataset.view; state.picked=null; render(); }));
+$('#btnSave').onclick = () => { exportProject(); dirty=false; savedAt=Date.now(); updateChrome(); };
+$('#btnOpen').onclick = () => $('#fileProject').click();
+$('#btnUndo').onclick = undo;
+$('#btnRedo').onclick = redo;
+$('#btnFind').onclick = showPalette;
+$('#fileProject').onchange = async e => {
+  const f=e.target.files[0]; if(!f) return;
+  importProject(await f.text()); e.target.value=''; dirty=false;
+};
+document.addEventListener('keydown', e=>{
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+  if(e.key==='Escape'){ if($('#overlay').innerHTML){ $('#overlay').innerHTML=''; return; } if(state.picked){ state.picked=null; render(); } }
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); $('#btnSave').click(); }
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); showPalette(); }
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='z'){ e.preventDefault(); e.shiftKey ? redo() : undo(); }
+  if(!typing && !e.metaKey && !e.ctrlKey && !e.altKey){
+    const i = STEPS.findIndex(s=>s[0]===state.view);
+    if(e.key===']' && i>=0 && i<STEPS.length-1){ state.view=STEPS[i+1][0]; render(); }
+    if(e.key==='[' && i>0){ state.view=STEPS[i-1][0]; render(); }
+    if(e.key==='?'){ state.view='help'; render(); }
+  }
+});
+window.addEventListener('beforeunload', e=>{
+  if(!dirty || !state.papers.length) return;
+  e.preventDefault(); e.returnValue = '';
+});
+
+(async ()=>{
+  normaliseSkeleton();
+  const resumed = await loadAutosave();
+  if(resumed && (state.papers.length || M('title'))){
+    state.ui.welcomed = true; state.view = 'home';
+    render(); toast('Picked up where you left off. Save a file to keep a copy.');
+  } else {
+    render();
+    if(!state.ui.welcomed && !state.papers.length) showWelcome();
+  }
+})();
+</script>
+</body>
+</html>
